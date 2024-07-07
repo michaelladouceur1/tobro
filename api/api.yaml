@@ -1,0 +1,108 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Minimal ping API server
+paths:
+  /axis:
+    get:
+      responses:
+        "200":
+          description: Axis response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Axis"
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Axis"
+      responses:
+        "200":
+          description: Axis updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Axis"
+  /rotate_axis:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotateAxisRequest"
+      responses:
+        "200":
+          description: Axis rotated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Axis"
+components:
+  schemas:
+    Axis:
+      type: object
+      required:
+        - type
+        - min
+        - max
+        - min_speed
+        - max_speed
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - linear
+            - angular
+        value:
+          type: number
+          format: float
+        min:
+          type: number
+          format: float
+        max:
+          type: number
+          format: float
+        min_speed:
+          type: number
+          format: float
+        max_speed:
+          type: number
+          format: float
+    RotateAxisRequest:
+      type: object
+      required:
+        - axis
+        - angle
+      properties:
+        axis_id:
+          type: string
+        angle:
+          type: number
+          format: float
+# paths:
+#   /ping:
+#     get:
+#       responses:
+#         "200":
+#           description: pet response
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: "#/components/schemas/Pong"
+# components:
+#   schemas:
+#     # base types
+#     Pong:
+#       type: object
+#       required:
+#         - ping
+#       properties:
+#         ping:
+#           type: string
+#           example: pong
