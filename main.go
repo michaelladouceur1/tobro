@@ -34,6 +34,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"go.bug.st/serial"
@@ -41,6 +42,11 @@ import (
 
 type Input struct {
 	Data string `json:"data"`
+}
+
+type Command struct {
+	Command string `json:"command"`
+	Delay   int    `json:"delay"`
 }
 
 func (i *Input) UnmarshalJSON(data []byte) error {
@@ -94,12 +100,36 @@ func waitForKey(port serial.Port) {
 			return
 		}
 
-		// command := "{\"command\": \"" + s + "\"}"
+		// command := "{\"command\":\"" + s + "\"}"
+		sInt, err := strconv.Atoi(s)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		command := Command{
+			Command: "delay",
+			Delay:   sInt,
+		}
+
+		json, err := json.Marshal(command)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		// fmt.Print("Command: ")
+		// fmt.Println(string(json))
 
 		// sizeInBytes := len(command)
 		// fmt.Printf("Size in bytes: %d\n", sizeInBytes)
 
-		_, err := port.Write([]byte(s))
+		// commandByteArr := make([]byte, len(command))
+		// copy(commandByteArr[:], command)
+
+		commandWithNewline := append(json, '\n')
+
+		_, err = port.Write([]byte(commandWithNewline))
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -110,7 +140,7 @@ func waitForKey(port serial.Port) {
 func listenAsync(port serial.Port) {
 	var input string
 
-	buff := make([]byte, 100)
+	buff := make([]byte, 1000)
 	for {
 		// Reads up to 100 bytes
 		n, err := port.Read(buff)
@@ -123,8 +153,6 @@ func listenAsync(port serial.Port) {
 		}
 
 		input += string(buff[:n])
-
-		fmt.Printf("Input1: %s\n", input)
 
 		if strings.Contains(input, "\n") {
 			fmt.Printf("Input: %s\n", input)
