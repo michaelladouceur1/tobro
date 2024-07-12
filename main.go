@@ -1,47 +1,20 @@
 package main
 
-// import (
-// 	"log"
-// 	"net/http"
-
-// 	"tobro-server/api"
-
-// 	"github.com/gin-gonic/gin"
-// )
-
-// func main() {
-// 	// create a type that satisfies the `api.ServerInterface`, which contains an implementation of every operation from the generated code
-// 	server := api.NewServer()
-
-// 	r := gin.Default()
-
-// 	api.RegisterHandlers(r, server)
-
-// 	// And we serve HTTP until the world ends.
-
-// 	s := &http.Server{
-// 		Handler: r,
-// 		Addr:    "0.0.0.0:8080",
-// 	}
-
-// 	// And we serve HTTP until the world ends.
-// 	log.Fatal(s.ListenAndServe())
-// }
-
 import (
 	"bufio"
+	"embed"
 	"encoding/json"
-	"fmt"
+	"io/fs"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"go.bug.st/serial"
 )
 
 type Input struct {
-	Data string `json:"data"`
+	Delay int `json:"delay"`
 }
 
 type Command struct {
@@ -49,47 +22,63 @@ type Command struct {
 	Delay   int    `json:"delay"`
 }
 
-func (i *Input) UnmarshalJSON(data []byte) error {
-	aux := &struct {
-		Data string `json:"data"`
-	}{
-		Data: "",
+//go:embed web/build
+var UI embed.FS
+
+var uiFS fs.FS
+
+func init() {
+	var err error
+	uiFS, err = fs.Sub(UI, "web/build")
+	if err != nil {
+		panic(err)
 	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	i.Data = aux.Data
-	return nil
 }
 
+// var port serial.Port
+var portServer *PortServer
+
 func main() {
-	ports, err := serial.GetPortsList()
-	if err != nil {
+	portServer = NewPortServer()
+
+	// portServer.PopulatePorts()
+	// portsChan := portServer.WatchPorts()
+
+	// for result := range portsChan {
+	// 	if result.Error != nil {
+	// 		log.Fatal(result.Error)
+	// 		return
+	// 	}
+
+	// 	if result.Data != nil {
+	// 		log.Println("Avaible ports:", result.Data)
+	// 		log.Println("Opening port:", result.Data[0])
+	// 		err := portServer.OpenPort(portServer.AvaiblePorts[0])
+	// 		if err != nil {
+	// 			log.Fatal(err)
+	// 			return
+	// 		}
+	// 		portServer.ListenToPort()
+	// 		break
+	// 	}
+
+	// }
+
+	// portServer.OpenPort(portServer.AvaiblePorts[0])
+	// portServer.ListenToPort()
+
+	// go listenAsync(port)
+	go waitForKey(portServer.Port)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", staticHandler)
+	mux.HandleFunc("/ws", websocketHandler)
+	mux.HandleFunc("/connect", connectHandler)
+	mux.HandleFunc("/delay", delayHandler)
+
+	if err := http.ListenAndServe(":8080", mux); err != nil {
 		panic(err)
 	}
-
-	if len(ports) == 0 {
-		fmt.Println("No ports found")
-		return
-	}
-
-	for _, port := range ports {
-		fmt.Println(port)
-		fmt.Println()
-	}
-
-	mode := &serial.Mode{
-		BaudRate: 9600,
-	}
-
-	port, err := serial.Open(ports[0], mode)
-	if err != nil {
-		panic(err)
-	}
-	// defer port.Close()
-
-	go listenAsync(port)
-	waitForKey(port)
 }
 
 func waitForKey(port serial.Port) {
@@ -134,35 +123,5 @@ func waitForKey(port serial.Port) {
 			log.Fatal(err)
 			return
 		}
-	}
-}
-
-func listenAsync(port serial.Port) {
-	var input string
-
-	buff := make([]byte, 1000)
-	for {
-		// Reads up to 100 bytes
-		n, err := port.Read(buff)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if n == 0 {
-			fmt.Println("\nEOF")
-			break
-		}
-
-		input += string(buff[:n])
-
-		if strings.Contains(input, "\n") {
-			fmt.Printf("Input: %s\n", input)
-			input = ""
-		}
-
-		// If we receive a newline stop reading
-		// if strings.Contains(string(buff[:n]), "\n") {
-		// 	fmt.Println("\nNewline detected")
-		// 	break
-		// }
 	}
 }
