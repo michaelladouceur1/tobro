@@ -18,8 +18,10 @@ void setup() {
 
 void loop() {
 
-  checkForToggleLight();
   attemptReadSerial();
+  checkSetupPin();
+  checkDigitalWritePin();
+  checkForToggleLight();
   // attemptUpdateDelay();
   // delay(10);
 }
@@ -52,37 +54,100 @@ DeserializationError attemptReadSerial() {
       return error;
     }
 
-    const char* command = doc["command"];
+    // const char* command = doc["command"];
 
-    if (strcmp(command, "delay") == 0) {
-      int newDelay = doc["delay"];
-      if (newDelay > 0) {
-        delayTime = newDelay;
-      }
+    // if (strcmp(command, "delay") == 0) {
+    //   int newDelay = doc["delay"];
+    //   if (newDelay > 0) {
+    //     delayTime = newDelay;
+    //   }
+    // }
+
+    // stringComplete = false;
+    // inputString = "";
+  }
+}
+
+void resetSerial() {
+  stringComplete = false;
+  inputString = "";
+}
+
+void checkSetupPin() {
+  if (!stringComplete) {
+    return;
+  }
+
+  if (!doc.containsKey("command")) {
+    return;
+  }
+
+  const char* command = doc["command"];
+  if (strcmp(command, "setup_pin") == 0) {
+    int pin = doc["pin"];
+    int mode = doc["mode"];
+
+    if (pin < 0 || pin > 13) {
+      serialWrite("Invalid pin number");
+      return;
     }
 
-    stringComplete = false;
-    inputString = "";
-  }
-}
-
-void attemptUpdateDelay() {
-  if (inputString.length() > 0) {
-    int newDelay = inputString.toInt();
-    if (newDelay > 0) {
-      delayTime = newDelay;
+    if (mode != INPUT && mode != OUTPUT) {
+      serialWrite("Invalid mode");
+      return;
     }
-  }
+
+    pinMode(pin, mode);
+
+    resetSerial();
 }
 
-void checkForToggleLight() {
-  if (previousMillis + delayTime < millis()) {
-    previousMillis = millis();
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+void checkDigitalWritePin() {
+  if (!stringComplete) {
+    return;
   }
-}
 
-void serialWrite(const char* message) {
-  Serial.write(message);
-  Serial.write("\n");
-}
+  if (!doc.containsKey("command")) {
+    return;
+  }
+
+  const char* command = doc["command"];
+  if (strcmp(command, "digital_write_pin") == 0) {
+    int pin = doc["pin"];
+    int value = doc["value"];
+
+    if (pin < 0 || pin > 13) {
+      serialWrite("Invalid pin number");
+      return;
+    }
+
+    if (value != HIGH && value != LOW) {
+      serialWrite("Invalid value");
+      return;
+    }
+
+    digitalWrite(pin, value);
+
+    resetSerial();
+  }
+
+// void attemptUpdateDelay() {
+//   if (inputString.length() > 0) {
+//     int newDelay = inputString.toInt();
+//     if (newDelay > 0) {
+//       delayTime = newDelay;
+//     }
+//   }
+// }
+
+// void checkForToggleLight() {
+//   if (previousMillis + delayTime < millis()) {
+//     previousMillis = millis();
+//     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+//   }
+// }
+
+// void serialWrite(const char* message) {
+//   Serial.write(message);
+//   Serial.write("\n");
+// }
