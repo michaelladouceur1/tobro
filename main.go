@@ -1,16 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"embed"
-	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"os/signal"
+	"syscall"
 
-	"go.bug.st/serial"
+	"github.com/gin-gonic/gin"
 )
 
 type Input struct {
@@ -37,91 +36,43 @@ func init() {
 
 // var port serial.Port
 var portServer *PortServer
+var httpServer *HTTPServer
 
 func main() {
 	portServer = NewPortServer()
+	httpServer = NewHTTPServer()
 
-	// portServer.PopulatePorts()
-	// portsChan := portServer.WatchPorts()
+	r := gin.Default()
 
-	// for result := range portsChan {
-	// 	if result.Error != nil {
-	// 		log.Fatal(result.Error)
-	// 		return
-	// 	}
+	enableCORS(r)
 
-	// 	if result.Data != nil {
-	// 		log.Println("Avaible ports:", result.Data)
-	// 		log.Println("Opening port:", result.Data[0])
-	// 		err := portServer.OpenPort(portServer.AvaiblePorts[0])
-	// 		if err != nil {
-	// 			log.Fatal(err)
-	// 			return
-	// 		}
-	// 		portServer.ListenToPort()
-	// 		break
-	// 	}
+	RegisterHandlers(r, httpServer)
 
-	// }
+	s := &http.Server{
+		Handler: r,
+		Addr:    ":8081",
+	}
 
-	// portServer.OpenPort(portServer.AvaiblePorts[0])
-	// portServer.ListenToPort()
-
-	// go listenAsync(port)
-	go waitForKey(portServer.Port)
+	go func() {
+		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+	log.Print("HTTP server started")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", staticHandler)
 	mux.HandleFunc("/ws", websocketHandler)
-	mux.HandleFunc("/connect", connectHandler)
-	mux.HandleFunc("/delay", delayHandler)
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
-		panic(err)
-	}
-}
-
-func waitForKey(port serial.Port) {
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		s := scanner.Text()
-		if s == "exit" {
-			return
+	go func() {
+		if err := http.ListenAndServe(":8080", mux); err != nil {
+			log.Fatalf("listen: %s\n", err)
 		}
+	}()
+	log.Print("Websocket server started")
 
-		// command := "{\"command\":\"" + s + "\"}"
-		sInt, err := strconv.Atoi(s)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		command := Command{
-			Command: "delay",
-			Delay:   sInt,
-		}
-
-		json, err := json.Marshal(command)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		// fmt.Print("Command: ")
-		// fmt.Println(string(json))
-
-		// sizeInBytes := len(command)
-		// fmt.Printf("Size in bytes: %d\n", sizeInBytes)
-
-		// commandByteArr := make([]byte, len(command))
-		// copy(commandByteArr[:], command)
-
-		commandWithNewline := append(json, '\n')
-
-		_, err = port.Write([]byte(commandWithNewline))
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-	}
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Print("Shutting down servers...")
 }

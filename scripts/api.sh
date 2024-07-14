@@ -1,1 +1,0 @@
-oapi-codegen -config ./api/server_config.yaml ./api/api.yaml

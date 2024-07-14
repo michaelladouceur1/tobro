@@ -1,0 +1,182 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: tobro_http_server
+paths:
+  /ping:
+    get:
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+  /connect:
+    post:
+      requestBody:
+        description: Connect to a serial port
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectRequest'
+      responses:
+        '200':
+          description: Connect post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectResponse'
+        '400':
+          description: Connect post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /setup_pin:
+    post:
+      requestBody:
+        description: Setup a pin
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupPinRequest'
+      responses:
+        '200':
+          description: Setup pin post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupPinResponse'
+        '400':
+          description: Setup pin post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /write_pin:
+    post:
+      requestBody:
+        description: Write to a pin
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WritePinRequest'
+      responses:
+        '200':
+          description: Write pin post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WritePinResponse'
+        '400':
+          description: Write pin post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  # temporary
+  /delay:
+    post:
+      requestBody:
+        description: Delay for a number of milliseconds
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - delay
+              properties:
+                delay:
+                  type: integer
+                  example: 1000
+      responses:
+        '200':
+          description: Delay post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+        '400':
+          description: Delay post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    # base types
+    Pong:
+      type: object
+      required:
+        - ping
+      properties:
+        ping:
+          type: string
+          example: pong
+    ErrorResponse:
+      type: object
+      required:
+        - success
+      properties:
+        message:
+          type: string
+    ConnectRequest:
+      type: object
+      required:
+        - port
+      properties:
+        port:
+          type: string
+          example: "/dev/ttyUSB0"
+    ConnectResponse:
+      type: object
+      properties:
+        port:
+          type: string
+          example: "/dev/ttyUSB0"
+        timestamp:
+          type: integer
+          example: 1612345678
+    SetupPinRequest:
+      type: object
+      required:
+        - pin
+        - mode
+      properties:
+        pin:
+          type: integer
+          example: 1
+        mode:
+          type: string
+          example: "output"
+    SetupPinResponse:
+      type: object
+      properties:
+        pin:
+          type: integer
+          example: 1
+        mode:
+          type: string
+          example: "output"
+    WritePinRequest:
+      type: object
+      required:
+        - pin
+        - value
+      properties:
+        pin:
+          type: integer
+          example: 1
+        value:
+          type: integer
+          example: 1
+    WritePinResponse:
+      type: object
+      properties:
+        pin:
+          type: integer
+          example: 1
+        value:
+          type: integer
+          example: 1

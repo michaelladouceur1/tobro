@@ -38,7 +38,7 @@ function App() {
       <button
         onClick={() => {
           console.log("Sending request");
-          fetch("/delay", {
+          fetch("http://localhost:8081/delay", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

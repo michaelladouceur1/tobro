@@ -18,18 +18,18 @@ type SuccessResponse struct {
 	Message string `json:"message"`
 }
 
-func createSuccessResponse(message string) []byte {
-	res := SuccessResponse{
-		Message: message,
-	}
+// func createSuccessResponse(message string) []byte {
+// 	res := SuccessResponse{
+// 		Message: message,
+// 	}
 
-	json, err := json.Marshal(res)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	json, err := json.Marshal(res)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	return json
-}
+// 	return json
+// }
 
 type BaseResponse[T any] struct {
 	Type string `json:"type"`
@@ -125,55 +125,55 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type ConnectData struct {
-	Port string `json:"port"`
-}
+// type ConnectData struct {
+// 	Port string `json:"port"`
+// }
 
-func connectHandler(w http.ResponseWriter, r *http.Request) {
-	var data ConnectData
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+// func connectHandler(w http.ResponseWriter, r *http.Request) {
+// 	var data ConnectData
+// 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
 
-	log.Printf("connectHandler: %v", data)
+// 	log.Printf("connectHandler: %v", data)
 
-	err := portServer.OpenPort(data.Port)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+// 	err := portServer.OpenPort(data.Port)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 		return
+// 	}
 
-	portServer.ListenToPort()
+// 	portServer.ListenToPort()
 
-	w.WriteHeader(http.StatusNoContent)
-	w.Write(createSuccessResponse("connected"))
-}
+// 	w.WriteHeader(http.StatusNoContent)
+// 	w.Write(createSuccessResponse("connected"))
+// }
 
-func delayHandler(w http.ResponseWriter, r *http.Request) {
-	log.Print("Delay handler called")
-	var input Input
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+// func delayHandler(w http.ResponseWriter, r *http.Request) {
+// 	log.Print("Delay handler called")
+// 	var input Input
+// 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
 
-	command := Command{
-		Command: "delay",
-		Delay:   input.Delay,
-	}
+// 	command := Command{
+// 		Command: "delay",
+// 		Delay:   input.Delay,
+// 	}
 
-	json, err := json.Marshal(command)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+// 	json, err := json.Marshal(command)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
 
-	commandWithNewline := append(json, '\n')
+// 	commandWithNewline := append(json, '\n')
 
-	err = portServer.Write(commandWithNewline)
-	if err != nil {
-		log.Fatal("ERRORRRRRR: ", err)
-		return
-	}
-}
+// 	err = portServer.Write(commandWithNewline)
+// 	if err != nil {
+// 		log.Fatal("ERRORRRRRR: ", err)
+// 		return
+// 	}
+// }
