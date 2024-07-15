@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"time"
 
 	"go.bug.st/serial"
@@ -20,6 +22,25 @@ type PortServerResult[T any] struct {
 type WatchPortsResult = PortServerResult[[]string]
 
 type ListenToPortResult = PortServerResult[string]
+
+type Command string
+
+const (
+	SetupPinCommandType        Command = "setup_pin"
+	DigitalWritePinCommandType Command = "digital_write_pin"
+)
+
+type SetupPinCommand struct {
+	Command string `json:"command"`
+	Pin     int    `json:"pin"`
+	Mode    int    `json:"mode"`
+}
+
+type DigitalWritePinCommand struct {
+	Command string `json:"command"`
+	Pin     int    `json:"pin"`
+	Value   int    `json:"value"`
+}
 
 func NewPortServer() *PortServer {
 	return &PortServer{
@@ -123,12 +144,70 @@ func (ps *PortServer) ClosePort() error {
 	return nil
 }
 
+func (ps *PortServer) SetupPin(pin int, mode string) error {
+	command := SetupPinCommand{
+		Command: string(SetupPinCommandType),
+		Pin:     pin,
+	}
+
+	if mode == string(Input) {
+		command.Pin = 0
+	} else if mode == string(Output) {
+		command.Pin = 1
+	} else {
+		return &InvalidPinModeError{}
+	}
+
+	json, err := json.Marshal(command)
+	if err != nil {
+		return err
+	}
+
+	log.Print("Setup pin command to ps.Write: ", string(json))
+	err = ps.Write(json)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ps *PortServer) WriteDigitalPin(pin int, value int) error {
+	command := DigitalWritePinCommand{
+		Command: string(DigitalWritePinCommandType),
+		Pin:     pin,
+		Value:   value,
+	}
+
+	json, err := json.Marshal(command)
+	if err != nil {
+		return err
+	}
+
+	log.Print("Write digital pin command to ps.Write: ", string(json))
+	err = ps.Write(json)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (ps *PortServer) Write(data []byte) error {
 	if ps.Port == nil {
 		return &PortNotOpenError{}
 	}
 
-	_, err := ps.Port.Write([]byte(data))
+	commandWithNewline := append(data, '\n')
+
+	log.Print("Writing to port: ", string(commandWithNewline))
+
+	_, err := ps.Port.Write([]byte(commandWithNewline))
+	if err != nil {
+		return err
+	}
+
+	err = ps.Port.ResetOutputBuffer()
 	if err != nil {
 		return err
 	}
@@ -155,8 +234,11 @@ func (ps *PortServer) ListenToPort() chan ListenToPortResult {
 
 			input += string(buf[:n])
 
+			log.Print(input)
+
 			if input[len(input)-1] == '\n' {
 				ch <- ListenToPortResult{Data: input}
+				log.Print(input)
 				input = ""
 			}
 		}
@@ -191,4 +273,10 @@ type PortOpenTimeoutError struct{}
 
 func (e *PortOpenTimeoutError) Error() string {
 	return "Port open timeout"
+}
+
+type InvalidPinModeError struct{}
+
+func (e *InvalidPinModeError) Error() string {
+	return "Invalid pin mode"
 }

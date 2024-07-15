@@ -54,7 +54,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /write_pin:
+  /digital_write_pin:
     post:
       requestBody:
         description: Write to a pin
@@ -68,37 +68,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WritePinResponse'
+                $ref: '#/components/schemas/DigitalWritePinResponse'
         '400':
           description: Write pin post error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  # temporary
-  /delay:
-    post:
-      requestBody:
-        description: Delay for a number of milliseconds
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - delay
-              properties:
-                delay:
-                  type: integer
-                  example: 1000
-      responses:
-        '200':
-          description: Delay post response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pong'
-        '400':
-          description: Delay post error response
           content:
             application/json:
               schema:
@@ -149,7 +121,9 @@ components:
           example: 1
         mode:
           type: string
-          example: "output"
+          enum:
+            - "input"
+            - "output"
     SetupPinResponse:
       type: object
       properties:
@@ -158,7 +132,6 @@ components:
           example: 1
         mode:
           type: string
-          example: "output"
     WritePinRequest:
       type: object
       required:
@@ -170,8 +143,9 @@ components:
           example: 1
         value:
           type: integer
-          example: 1
-    WritePinResponse:
+          minimum: 0
+          maximum: 1
+    DigitalWritePinResponse:
       type: object
       properties:
         pin:
@@ -179,4 +153,5 @@ components:
           example: 1
         value:
           type: integer
-          example: 1
+          minimum: 0
+          maximum: 1

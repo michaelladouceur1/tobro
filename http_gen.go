@@ -7,6 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Defines values for SetupPinRequestMode.
+const (
+	Input  SetupPinRequestMode = "input"
+	Output SetupPinRequestMode = "output"
+)
+
 // ConnectRequest defines model for ConnectRequest.
 type ConnectRequest struct {
 	Port string `json:"port"`
@@ -16,6 +22,12 @@ type ConnectRequest struct {
 type ConnectResponse struct {
 	Port      *string `json:"port,omitempty"`
 	Timestamp *int    `json:"timestamp,omitempty"`
+}
+
+// DigitalWritePinResponse defines model for DigitalWritePinResponse.
+type DigitalWritePinResponse struct {
+	Pin   *int `json:"pin,omitempty"`
+	Value *int `json:"value,omitempty"`
 }
 
 // ErrorResponse defines model for ErrorResponse.
@@ -30,9 +42,12 @@ type Pong struct {
 
 // SetupPinRequest defines model for SetupPinRequest.
 type SetupPinRequest struct {
-	Mode string `json:"mode"`
-	Pin  int    `json:"pin"`
+	Mode SetupPinRequestMode `json:"mode"`
+	Pin  int                 `json:"pin"`
 }
+
+// SetupPinRequestMode defines model for SetupPinRequest.Mode.
+type SetupPinRequestMode string
 
 // SetupPinResponse defines model for SetupPinResponse.
 type SetupPinResponse struct {
@@ -46,28 +61,14 @@ type WritePinRequest struct {
 	Value int `json:"value"`
 }
 
-// WritePinResponse defines model for WritePinResponse.
-type WritePinResponse struct {
-	Pin   *int `json:"pin,omitempty"`
-	Value *int `json:"value,omitempty"`
-}
-
-// PostDelayJSONBody defines parameters for PostDelay.
-type PostDelayJSONBody struct {
-	Delay int `json:"delay"`
-}
-
 // PostConnectJSONRequestBody defines body for PostConnect for application/json ContentType.
 type PostConnectJSONRequestBody = ConnectRequest
 
-// PostDelayJSONRequestBody defines body for PostDelay for application/json ContentType.
-type PostDelayJSONRequestBody PostDelayJSONBody
+// PostDigitalWritePinJSONRequestBody defines body for PostDigitalWritePin for application/json ContentType.
+type PostDigitalWritePinJSONRequestBody = WritePinRequest
 
 // PostSetupPinJSONRequestBody defines body for PostSetupPin for application/json ContentType.
 type PostSetupPinJSONRequestBody = SetupPinRequest
-
-// PostWritePinJSONRequestBody defines body for PostWritePin for application/json ContentType.
-type PostWritePinJSONRequestBody = WritePinRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -75,17 +76,14 @@ type ServerInterface interface {
 	// (POST /connect)
 	PostConnect(c *gin.Context)
 
-	// (POST /delay)
-	PostDelay(c *gin.Context)
+	// (POST /digital_write_pin)
+	PostDigitalWritePin(c *gin.Context)
 
 	// (GET /ping)
 	GetPing(c *gin.Context)
 
 	// (POST /setup_pin)
 	PostSetupPin(c *gin.Context)
-
-	// (POST /write_pin)
-	PostWritePin(c *gin.Context)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -110,8 +108,8 @@ func (siw *ServerInterfaceWrapper) PostConnect(c *gin.Context) {
 	siw.Handler.PostConnect(c)
 }
 
-// PostDelay operation middleware
-func (siw *ServerInterfaceWrapper) PostDelay(c *gin.Context) {
+// PostDigitalWritePin operation middleware
+func (siw *ServerInterfaceWrapper) PostDigitalWritePin(c *gin.Context) {
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -120,7 +118,7 @@ func (siw *ServerInterfaceWrapper) PostDelay(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.PostDelay(c)
+	siw.Handler.PostDigitalWritePin(c)
 }
 
 // GetPing operation middleware
@@ -147,19 +145,6 @@ func (siw *ServerInterfaceWrapper) PostSetupPin(c *gin.Context) {
 	}
 
 	siw.Handler.PostSetupPin(c)
-}
-
-// PostWritePin operation middleware
-func (siw *ServerInterfaceWrapper) PostWritePin(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostWritePin(c)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -190,8 +175,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	}
 
 	router.POST(options.BaseURL+"/connect", wrapper.PostConnect)
-	router.POST(options.BaseURL+"/delay", wrapper.PostDelay)
+	router.POST(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin)
 	router.GET(options.BaseURL+"/ping", wrapper.GetPing)
 	router.POST(options.BaseURL+"/setup_pin", wrapper.PostSetupPin)
-	router.POST(options.BaseURL+"/write_pin", wrapper.PostWritePin)
 }

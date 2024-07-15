@@ -21,13 +21,9 @@ void loop() {
   attemptReadSerial();
   checkSetupPin();
   checkDigitalWritePin();
-  checkForToggleLight();
-  // attemptUpdateDelay();
-  // delay(10);
 }
 
 DeserializationError attemptReadSerial() {
-
   if (Serial.available() > 0) {
     while (Serial.available()) {
       char inChar = (char)Serial.read();
@@ -44,7 +40,6 @@ DeserializationError attemptReadSerial() {
 
     char json[inputString.length() + 1];
     inputString.toCharArray(json, inputString.length() + 1);
-    serialWrite(json);
 
     DeserializationError error = deserializeJson(doc, json);
 
@@ -71,6 +66,7 @@ DeserializationError attemptReadSerial() {
 void resetSerial() {
   stringComplete = false;
   inputString = "";
+  doc.clear();
 }
 
 void checkSetupPin() {
@@ -92,7 +88,7 @@ void checkSetupPin() {
       return;
     }
 
-    if (mode != INPUT && mode != OUTPUT) {
+    if (mode != 0 && mode != 1) {
       serialWrite("Invalid mode");
       return;
     }
@@ -100,9 +96,10 @@ void checkSetupPin() {
     pinMode(pin, mode);
 
     resetSerial();
+  }
 }
 
-void checkDigitalWritePin() {
+void checkDigitalWritePin() {  
   if (!stringComplete) {
     return;
   }
@@ -121,7 +118,7 @@ void checkDigitalWritePin() {
       return;
     }
 
-    if (value != HIGH && value != LOW) {
+    if (value != 0 && value != 1) {
       serialWrite("Invalid value");
       return;
     }
@@ -130,6 +127,7 @@ void checkDigitalWritePin() {
 
     resetSerial();
   }
+}
 
 // void attemptUpdateDelay() {
 //   if (inputString.length() > 0) {
@@ -147,7 +145,7 @@ void checkDigitalWritePin() {
 //   }
 // }
 
-// void serialWrite(const char* message) {
-//   Serial.write(message);
-//   Serial.write("\n");
-// }
+void serialWrite(const char* message) {
+  Serial.write(message);
+  Serial.write("\n");
+}

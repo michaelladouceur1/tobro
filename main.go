@@ -12,15 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Input struct {
-	Delay int `json:"delay"`
-}
-
-type Command struct {
-	Command string `json:"command"`
-	Delay   int    `json:"delay"`
-}
-
 //go:embed web/build
 var UI embed.FS
 

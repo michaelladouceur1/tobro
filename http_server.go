@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -53,40 +52,9 @@ func (s *HTTPServer) PostConnect(c *gin.Context) {
 		return
 	}
 
+	portServer.ListenToPort()
+
 	c.JSON(http.StatusOK, ConnectResponse{Port: &req.Port})
-}
-
-// (POST /delay)
-func (s *HTTPServer) PostDelay(c *gin.Context) {
-	var req PostDelayJSONBody
-	if err := c.ShouldBindJSON(&req); err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
-		return
-	}
-
-	command := Command{
-		Command: "delay",
-		Delay:   req.Delay,
-	}
-
-	json, err := json.Marshal(command)
-	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
-		return
-	}
-
-	commandWithNewline := append(json, '\n')
-
-	err = portServer.Write(commandWithNewline)
-	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
-		return
-	}
-
-	c.JSON(http.StatusOK, command)
 }
 
 // (POST /setup_pin)
@@ -98,11 +66,19 @@ func (s *HTTPServer) PostSetupPin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, SetupPinResponse{Mode: &req.Mode, Pin: &req.Pin})
+	err := portServer.SetupPin(req.Pin, string(req.Mode))
+	if err != nil {
+		err := err.Error()
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
+		return
+	}
+
+	modeStr := string(req.Mode)
+	c.JSON(http.StatusOK, SetupPinResponse{Mode: &modeStr, Pin: &req.Pin})
 }
 
-// (POST /write_pin)
-func (s *HTTPServer) PostWritePin(c *gin.Context) {
+// (POST /digital_write_pin)
+func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
 	var req WritePinRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		err := err.Error()
@@ -110,5 +86,12 @@ func (s *HTTPServer) PostWritePin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, WritePinResponse{Pin: &req.Pin, Value: &req.Value})
+	err := portServer.WriteDigitalPin(req.Pin, req.Value)
+	if err != nil {
+		err := err.Error()
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
+		return
+	}
+
+	c.JSON(http.StatusOK, DigitalWritePinResponse{Pin: &req.Pin, Value: &req.Value})
 }
