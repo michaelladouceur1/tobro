@@ -30,8 +30,19 @@ export interface SetupPinRequest {
      * @type {string}
      * @memberof SetupPinRequest
      */
-    mode: string;
+    mode: SetupPinRequestModeEnum;
 }
+
+
+/**
+ * @export
+ */
+export const SetupPinRequestModeEnum = {
+    Input: 'input',
+    Output: 'output'
+} as const;
+export type SetupPinRequestModeEnum = typeof SetupPinRequestModeEnum[keyof typeof SetupPinRequestModeEnum];
+
 
 /**
  * Check if a given object implements the SetupPinRequest interface.

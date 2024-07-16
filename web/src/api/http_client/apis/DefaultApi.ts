@@ -17,21 +17,20 @@ import * as runtime from '../runtime';
 import type {
   ConnectRequest,
   ConnectResponse,
-  DelayPostRequest,
+  DigitalWritePinResponse,
   ErrorResponse,
   Pong,
   SetupPinRequest,
   SetupPinResponse,
   WritePinRequest,
-  WritePinResponse,
 } from '../models/index';
 import {
     ConnectRequestFromJSON,
     ConnectRequestToJSON,
     ConnectResponseFromJSON,
     ConnectResponseToJSON,
-    DelayPostRequestFromJSON,
-    DelayPostRequestToJSON,
+    DigitalWritePinResponseFromJSON,
+    DigitalWritePinResponseToJSON,
     ErrorResponseFromJSON,
     ErrorResponseToJSON,
     PongFromJSON,
@@ -42,24 +41,18 @@ import {
     SetupPinResponseToJSON,
     WritePinRequestFromJSON,
     WritePinRequestToJSON,
-    WritePinResponseFromJSON,
-    WritePinResponseToJSON,
 } from '../models/index';
 
 export interface ConnectPostRequest {
     connectRequest?: ConnectRequest;
 }
 
-export interface DelayPostOperationRequest {
-    delayPostRequest?: DelayPostRequest;
+export interface DigitalWritePinPostRequest {
+    writePinRequest?: WritePinRequest;
 }
 
 export interface SetupPinPostRequest {
     setupPinRequest?: SetupPinRequest;
-}
-
-export interface WritePinPostRequest {
-    writePinRequest?: WritePinRequest;
 }
 
 /**
@@ -96,7 +89,7 @@ export class DefaultApi extends runtime.BaseAPI {
 
     /**
      */
-    async delayPostRaw(requestParameters: DelayPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Pong>> {
+    async digitalWritePinPostRaw(requestParameters: DigitalWritePinPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DigitalWritePinResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -104,20 +97,20 @@ export class DefaultApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/delay`,
+            path: `/digital_write_pin`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DelayPostRequestToJSON(requestParameters['delayPostRequest']),
+            body: WritePinRequestToJSON(requestParameters['writePinRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => PongFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => DigitalWritePinResponseFromJSON(jsonValue));
     }
 
     /**
      */
-    async delayPost(requestParameters: DelayPostOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Pong> {
-        const response = await this.delayPostRaw(requestParameters, initOverrides);
+    async digitalWritePinPost(requestParameters: DigitalWritePinPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DigitalWritePinResponse> {
+        const response = await this.digitalWritePinPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -169,33 +162,6 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async setupPinPost(requestParameters: SetupPinPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SetupPinResponse> {
         const response = await this.setupPinPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async writePinPostRaw(requestParameters: WritePinPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WritePinResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/write_pin`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: WritePinRequestToJSON(requestParameters['writePinRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => WritePinResponseFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async writePinPost(requestParameters: WritePinPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WritePinResponse> {
-        const response = await this.writePinPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

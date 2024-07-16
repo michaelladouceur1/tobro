@@ -1,12 +1,16 @@
-import React, {useEffect, useState} from "react";
-import logo from "./logo.svg";
+import {Button, TextField, AppBar} from "@mui/material";
 import {useAtom} from "jotai";
+import {useEffect, useState} from "react";
 import {portsAtom} from "./atoms/portsAtom";
-import {connectPort} from "./api/connectService";
+import {useHttpApi} from "./hooks/useHttpApi";
+
 import "./App.css";
 
 function App() {
+  const api = useHttpApi();
+
   const [delay, setDelay] = useState(100);
+  const [port, setPort] = useState<number | null>(null);
   const [ports, setPorts] = useAtom(portsAtom);
 
   useEffect(() => {
@@ -28,30 +32,9 @@ function App() {
 
   return (
     <div>
-      <h1>Tobro UI</h1>
-      <input
-        type="number"
-        value={delay}
-        placeholder="Enter delay in milliseconds"
-        onChange={(e) => setDelay(parseInt(e.target.value))}
-      />
-      <button
-        onClick={() => {
-          console.log("Sending request");
-          fetch("http://localhost:8081/delay", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              delay: delay,
-            }),
-          });
-        }}
-      >
-        Send
-      </button>
-
+      <AppBar position="static" color="primary">
+        <h1>Tobro UI</h1>
+      </AppBar>
       <div>
         <h2>Ports</h2>
         <ul>
@@ -60,7 +43,7 @@ function App() {
               <li key={port}>{port}</li>
               <button
                 onClick={() => {
-                  connectPort({port});
+                  api.connectPost({connectRequest: {port}});
                 }}
               >
                 Connect
@@ -68,6 +51,63 @@ function App() {
             </span>
           ))}
         </ul>
+      </div>
+      <div>
+        <h2>Setup Pin</h2>
+        <TextField
+          label="Pin"
+          type="number"
+          size="small"
+          value={port}
+          onChange={(event) => {
+            setPort(parseInt(event.target.value));
+          }}
+        />
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (port === null) {
+              return;
+            }
+            api.setupPinPost({setupPinRequest: {pin: port, mode: "output"}});
+          }}
+        >
+          Setup
+        </Button>
+      </div>
+      <div>
+        <h2>Digital Write Pin</h2>
+        <TextField
+          label="Value"
+          type="number"
+          size="small"
+          value={port}
+          onChange={(event) => {
+            setPort(parseInt(event.target.value));
+          }}
+        />
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (port === null) {
+              return;
+            }
+            api.digitalWritePinPost({writePinRequest: {pin: port, value: 1}});
+          }}
+        >
+          High
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (port === null) {
+              return;
+            }
+            api.digitalWritePinPost({writePinRequest: {pin: port, value: 0}});
+          }}
+        >
+          Low
+        </Button>
       </div>
     </div>
   );
