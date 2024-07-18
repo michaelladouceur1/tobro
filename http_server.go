@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -66,7 +67,14 @@ func (s *HTTPServer) PostSetupPin(c *gin.Context) {
 		return
 	}
 
-	err := portServer.SetupPin(req.Pin, string(req.Mode))
+	pin := board.GetPin(req.Pin)
+	if pin == nil {
+		err := "Pin not found"
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		return
+	}
+
+	err := pin.SetPinMode(req.Mode)
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
@@ -86,7 +94,22 @@ func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
 		return
 	}
 
-	err := portServer.WriteDigitalPin(req.Pin, req.Value)
+	pin := board.GetPin(req.Pin)
+	if pin == nil {
+		err := "Pin not found"
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		return
+	}
+
+	var err error
+	if req.Value == 0 {
+		err = pin.Low()
+	} else if req.Value == 1 {
+		err = pin.High()
+	} else {
+		err = errors.New("invalid value")
+	}
+
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
@@ -94,4 +117,33 @@ func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, DigitalWritePinResponse{Pin: &req.Pin, Value: &req.Value})
+}
+
+// (POST /pwm)
+func (s *HTTPServer) PostPwm(c *gin.Context) {
+	var req PWMRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		err := err.Error()
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		return
+	}
+
+	pin := board.GetPin(req.Pin)
+	if pin == nil {
+		err := "Pin not found"
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		return
+	}
+
+	err := pin.PWM(req.DutyCycle, req.Period, 5000)
+	if err != nil {
+		err := err.Error()
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
+		return
+	}
+
+	value := 1
+	c.JSON(http.StatusOK, DigitalWritePinResponse{Pin: &req.Pin, Value: &value})
+
+	// c.JSON(http.StatusOK, PWM{Pin: &req.Pin, DutyCycle: &req.DutyCycle, Period: &req.Period})
 }

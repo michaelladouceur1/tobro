@@ -11,6 +11,9 @@ function App() {
 
   const [delay, setDelay] = useState(100);
   const [port, setPort] = useState<number | null>(null);
+  const [pwmDutyCycle, setPwmDutyCycle] = useState(0.5);
+  const [pwmPeriod, setPwmPeriod] = useState(10);
+
   const [ports, setPorts] = useAtom(portsAtom);
 
   useEffect(() => {
@@ -53,9 +56,9 @@ function App() {
         </ul>
       </div>
       <div>
-        <h2>Setup Pin</h2>
+        <h2>Digital Write Pin</h2>
         <TextField
-          label="Pin"
+          label="Value"
           type="number"
           size="small"
           value={port}
@@ -74,18 +77,6 @@ function App() {
         >
           Setup
         </Button>
-      </div>
-      <div>
-        <h2>Digital Write Pin</h2>
-        <TextField
-          label="Value"
-          type="number"
-          size="small"
-          value={port}
-          onChange={(event) => {
-            setPort(parseInt(event.target.value));
-          }}
-        />
         <Button
           variant="outlined"
           onClick={() => {
@@ -108,6 +99,43 @@ function App() {
         >
           Low
         </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (port === null) {
+              return;
+            }
+            api.pwmPost({
+              pWMRequest: {
+                pin: port,
+                dutyCycle: pwmDutyCycle,
+                period: pwmPeriod,
+              },
+            });
+          }}
+        >
+          PWM
+        </Button>
+      </div>
+      <div>
+        <TextField
+          label="Duty Cycle"
+          type="number"
+          size="small"
+          value={pwmDutyCycle}
+          onChange={(event) => {
+            setPwmDutyCycle(parseInt(event.target.value));
+          }}
+        />
+        <TextField
+          label="Period"
+          type="number"
+          size="small"
+          value={pwmPeriod}
+          onChange={(event) => {
+            setPwmPeriod(parseInt(event.target.value));
+          }}
+        />
       </div>
     </div>
   );

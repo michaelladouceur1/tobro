@@ -19,6 +19,7 @@ import type {
   ConnectResponse,
   DigitalWritePinResponse,
   ErrorResponse,
+  PWMRequest,
   Pong,
   SetupPinRequest,
   SetupPinResponse,
@@ -33,6 +34,8 @@ import {
     DigitalWritePinResponseToJSON,
     ErrorResponseFromJSON,
     ErrorResponseToJSON,
+    PWMRequestFromJSON,
+    PWMRequestToJSON,
     PongFromJSON,
     PongToJSON,
     SetupPinRequestFromJSON,
@@ -49,6 +52,10 @@ export interface ConnectPostRequest {
 
 export interface DigitalWritePinPostRequest {
     writePinRequest?: WritePinRequest;
+}
+
+export interface PwmPostRequest {
+    pWMRequest?: PWMRequest;
 }
 
 export interface SetupPinPostRequest {
@@ -135,6 +142,33 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async pingGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Pong> {
         const response = await this.pingGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async pwmPostRaw(requestParameters: PwmPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DigitalWritePinResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/pwm`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PWMRequestToJSON(requestParameters['pWMRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DigitalWritePinResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async pwmPost(requestParameters: PwmPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DigitalWritePinResponse> {
+        const response = await this.pwmPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

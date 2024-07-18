@@ -144,18 +144,11 @@ func (ps *PortServer) ClosePort() error {
 	return nil
 }
 
-func (ps *PortServer) SetupPin(pin int, mode string) error {
+func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
 	command := SetupPinCommand{
 		Command: string(SetupPinCommandType),
 		Pin:     pin,
-	}
-
-	if mode == string(Input) {
-		command.Pin = 0
-	} else if mode == string(Output) {
-		command.Pin = 1
-	} else {
-		return &InvalidPinModeError{}
+		Mode:    int(mode),
 	}
 
 	json, err := json.Marshal(command)
@@ -172,11 +165,11 @@ func (ps *PortServer) SetupPin(pin int, mode string) error {
 	return nil
 }
 
-func (ps *PortServer) WriteDigitalPin(pin int, value int) error {
+func (ps *PortServer) WriteDigitalPin(pin int, value PinState) error {
 	command := DigitalWritePinCommand{
 		Command: string(DigitalWritePinCommandType),
 		Pin:     pin,
-		Value:   value,
+		Value:   int(value),
 	}
 
 	json, err := json.Marshal(command)

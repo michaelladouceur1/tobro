@@ -75,6 +75,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /pwm:
+    post:
+      requestBody:
+        description: Set PWM
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PWMRequest'
+      responses:
+        '200':
+          description: PWM post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalWritePinResponse'
+        '400':
+          description: PWM post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     # base types
@@ -155,3 +176,20 @@ components:
           type: integer
           minimum: 0
           maximum: 1
+    PWMRequest:
+      type: object
+      required:
+        - pin
+        - duty_cycle
+        - period
+      properties:
+        pin:
+          type: integer
+          example: 1
+        duty_cycle:
+          type: integer
+          minimum: 0
+          maximum: 100
+        period:
+          type: integer
+          minimum: 1

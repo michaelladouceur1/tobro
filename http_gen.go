@@ -35,6 +35,13 @@ type ErrorResponse struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// PWMRequest defines model for PWMRequest.
+type PWMRequest struct {
+	DutyCycle int `json:"duty_cycle"`
+	Period    int `json:"period"`
+	Pin       int `json:"pin"`
+}
+
 // Pong defines model for Pong.
 type Pong struct {
 	Ping string `json:"ping"`
@@ -67,6 +74,9 @@ type PostConnectJSONRequestBody = ConnectRequest
 // PostDigitalWritePinJSONRequestBody defines body for PostDigitalWritePin for application/json ContentType.
 type PostDigitalWritePinJSONRequestBody = WritePinRequest
 
+// PostPwmJSONRequestBody defines body for PostPwm for application/json ContentType.
+type PostPwmJSONRequestBody = PWMRequest
+
 // PostSetupPinJSONRequestBody defines body for PostSetupPin for application/json ContentType.
 type PostSetupPinJSONRequestBody = SetupPinRequest
 
@@ -81,6 +91,9 @@ type ServerInterface interface {
 
 	// (GET /ping)
 	GetPing(c *gin.Context)
+
+	// (POST /pwm)
+	PostPwm(c *gin.Context)
 
 	// (POST /setup_pin)
 	PostSetupPin(c *gin.Context)
@@ -134,6 +147,19 @@ func (siw *ServerInterfaceWrapper) GetPing(c *gin.Context) {
 	siw.Handler.GetPing(c)
 }
 
+// PostPwm operation middleware
+func (siw *ServerInterfaceWrapper) PostPwm(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostPwm(c)
+}
+
 // PostSetupPin operation middleware
 func (siw *ServerInterfaceWrapper) PostSetupPin(c *gin.Context) {
 
@@ -177,5 +203,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/connect", wrapper.PostConnect)
 	router.POST(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin)
 	router.GET(options.BaseURL+"/ping", wrapper.GetPing)
+	router.POST(options.BaseURL+"/pwm", wrapper.PostPwm)
 	router.POST(options.BaseURL+"/setup_pin", wrapper.PostSetupPin)
 }

@@ -28,10 +28,13 @@ func init() {
 // var port serial.Port
 var portServer *PortServer
 var httpServer *HTTPServer
+var board *Board
 
 func main() {
 	portServer = NewPortServer()
 	httpServer = NewHTTPServer()
+
+	board = NewBoard(ArduinoNano, portServer)
 
 	r := gin.Default()
 

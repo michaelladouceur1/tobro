@@ -5,6 +5,7 @@ models/ConnectRequest.ts
 models/ConnectResponse.ts
 models/DigitalWritePinResponse.ts
 models/ErrorResponse.ts
+models/PWMRequest.ts
 models/Pong.ts
 models/SetupPinRequest.ts
 models/SetupPinResponse.ts
