@@ -23,23 +23,25 @@ type WatchPortsResult = PortServerResult[[]string]
 
 type ListenToPortResult = PortServerResult[string]
 
-type Command string
+type Command int
 
 const (
-	SetupPinCommandType        Command = "setup_pin"
-	DigitalWritePinCommandType Command = "digital_write_pin"
+	SetupPinCommandType        Command = 1
+	DigitalWritePinCommandType Command = 2
 )
 
+// cmd: 1 (setup_pin)
 type SetupPinCommand struct {
-	Command string `json:"command"`
-	Pin     int    `json:"pin"`
-	Mode    int    `json:"mode"`
+	Command uint `json:"c"`
+	Pin     uint `json:"p"`
+	Mode    uint `json:"m"`
 }
 
+// cmd: 2 (digital_write_pin)
 type DigitalWritePinCommand struct {
-	Command string `json:"command"`
-	Pin     int    `json:"pin"`
-	Value   int    `json:"value"`
+	Command uint `json:"c"`
+	Pin     uint `json:"p"`
+	Value   uint `json:"v"`
 }
 
 func NewPortServer() *PortServer {
@@ -47,7 +49,7 @@ func NewPortServer() *PortServer {
 		Port:         nil,
 		AvaiblePorts: []string{},
 		Settings: serial.Mode{
-			BaudRate: 9600,
+			BaudRate: 115200,
 		},
 	}
 }
@@ -146,9 +148,9 @@ func (ps *PortServer) ClosePort() error {
 
 func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
 	command := SetupPinCommand{
-		Command: string(SetupPinCommandType),
-		Pin:     pin,
-		Mode:    int(mode),
+		Command: uint(SetupPinCommandType),
+		Pin:     uint(pin),
+		Mode:    uint(mode),
 	}
 
 	json, err := json.Marshal(command)
@@ -156,7 +158,6 @@ func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
 		return err
 	}
 
-	log.Print("Setup pin command to ps.Write: ", string(json))
 	err = ps.Write(json)
 	if err != nil {
 		return err
@@ -167,9 +168,9 @@ func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
 
 func (ps *PortServer) WriteDigitalPin(pin int, value PinState) error {
 	command := DigitalWritePinCommand{
-		Command: string(DigitalWritePinCommandType),
-		Pin:     pin,
-		Value:   int(value),
+		Command: uint(DigitalWritePinCommandType),
+		Pin:     uint(pin),
+		Value:   uint(value),
 	}
 
 	json, err := json.Marshal(command)
@@ -177,7 +178,6 @@ func (ps *PortServer) WriteDigitalPin(pin int, value PinState) error {
 		return err
 	}
 
-	log.Print("Write digital pin command to ps.Write: ", string(json))
 	err = ps.Write(json)
 	if err != nil {
 		return err
@@ -193,7 +193,8 @@ func (ps *PortServer) Write(data []byte) error {
 
 	commandWithNewline := append(data, '\n')
 
-	log.Print("Writing to port: ", string(commandWithNewline))
+	bits := len(commandWithNewline) * 8
+	log.Printf("Bits: %d", bits)
 
 	_, err := ps.Port.Write([]byte(commandWithNewline))
 	if err != nil {

@@ -8,19 +8,27 @@ int delayTime = 1000;
 
 StaticJsonDocument<200> doc;
 
+const char* COMMAND_KEY = "c";
+const char* PIN_KEY = "p";
+const char* MODE_KEY = "m";
+const char* VALUE_KEY = "v";
+
+const int COMMAND_SETUP = 1;
+const int COMMAND_DIGITAL_WRITE = 2;
+const int COMMAND_ANALOG_WRITE = 3;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial) continue;
   
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
-
   attemptReadSerial();
-  checkSetupPin();
-  checkDigitalWritePin();
+  attemptSetupPin();
+  attemptDigitalWritePin();
+  attemptAnalogWritePin();
 }
 
 DeserializationError attemptReadSerial() {
@@ -49,7 +57,7 @@ DeserializationError attemptReadSerial() {
       return error;
     }
 
-    // const char* command = doc["command"];
+    // const char* command = doc[COMMAND_KEY];
 
     // if (strcmp(command, "delay") == 0) {
     //   int newDelay = doc["delay"];
@@ -69,19 +77,15 @@ void resetSerial() {
   doc.clear();
 }
 
-void checkSetupPin() {
-  if (!stringComplete) {
+void attemptSetupPin() {
+  if (!checkCommandReady()) {
     return;
   }
 
-  if (!doc.containsKey("command")) {
-    return;
-  }
-
-  const char* command = doc["command"];
-  if (strcmp(command, "setup_pin") == 0) {
-    int pin = doc["pin"];
-    int mode = doc["mode"];
+  const int command = doc[COMMAND_KEY];
+  if (command == COMMAND_SETUP) {
+    int pin = doc[PIN_KEY];
+    int mode = doc[MODE_KEY];
 
     if (pin < 0 || pin > 13) {
       serialWrite("Invalid pin number");
@@ -99,19 +103,15 @@ void checkSetupPin() {
   }
 }
 
-void checkDigitalWritePin() {  
-  if (!stringComplete) {
+void attemptDigitalWritePin() {  
+  if (!checkCommandReady()) {
     return;
   }
 
-  if (!doc.containsKey("command")) {
-    return;
-  }
-
-  const char* command = doc["command"];
-  if (strcmp(command, "digital_write_pin") == 0) {
-    int pin = doc["pin"];
-    int value = doc["value"];
+  const int command = doc[COMMAND_KEY];
+  if (command == COMMAND_DIGITAL_WRITE) {
+    int pin = doc[PIN_KEY];
+    int value = doc[VALUE_KEY];
 
     if (pin < 0 || pin > 13) {
       serialWrite("Invalid pin number");
@@ -129,21 +129,35 @@ void checkDigitalWritePin() {
   }
 }
 
-// void attemptUpdateDelay() {
-//   if (inputString.length() > 0) {
-//     int newDelay = inputString.toInt();
-//     if (newDelay > 0) {
-//       delayTime = newDelay;
-//     }
-//   }
-// }
+void attemptAnalogWritePin() {
+  if (!checkCommandReady()) {
+    return;
+  }
 
-// void checkForToggleLight() {
-//   if (previousMillis + delayTime < millis()) {
-//     previousMillis = millis();
-//     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-//   }
-// }
+  const int command = doc[COMMAND_KEY];
+  if (command == COMMAND_ANALOG_WRITE) {
+    int pin = doc[PIN_KEY];
+    int value = doc[VALUE_KEY];
+
+    if (pin < 0 || pin > 13) {
+      serialWrite("Invalid pin number");
+      return;
+    }
+
+    if (value < 0 || value > 255) {
+      serialWrite("Invalid value");
+      return;
+    }
+
+    analogWrite(pin, value);
+
+    resetSerial();
+  }
+}
+
+bool checkCommandReady() {
+  return stringComplete && doc.containsKey(COMMAND_KEY);
+}
 
 void serialWrite(const char* message) {
   Serial.write(message);

@@ -11,7 +11,7 @@ function App() {
 
   const [delay, setDelay] = useState(100);
   const [port, setPort] = useState<number | null>(null);
-  const [pwmDutyCycle, setPwmDutyCycle] = useState(0.5);
+  const [pwmDutyCycle, setPwmDutyCycle] = useState(50);
   const [pwmPeriod, setPwmPeriod] = useState(10);
 
   const [ports, setPorts] = useAtom(portsAtom);
@@ -105,6 +105,7 @@ function App() {
             if (port === null) {
               return;
             }
+            console.log(`${port} ${pwmDutyCycle} ${pwmPeriod}`);
             api.pwmPost({
               pWMRequest: {
                 pin: port,
@@ -122,6 +123,7 @@ function App() {
           label="Duty Cycle"
           type="number"
           size="small"
+          InputProps={{inputProps: {min: 1, max: 100}}}
           value={pwmDutyCycle}
           onChange={(event) => {
             setPwmDutyCycle(parseInt(event.target.value));

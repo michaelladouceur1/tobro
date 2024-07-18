@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -122,11 +123,15 @@ func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
 // (POST /pwm)
 func (s *HTTPServer) PostPwm(c *gin.Context) {
 	var req PWMRequest
+	json, err := json.Marshal(req)
+	log.Println("PostPwm", string(json))
 	if err := c.ShouldBindJSON(&req); err != nil {
 		err := err.Error()
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
 		return
 	}
+
+	log.Println("PWM", req)
 
 	pin := board.GetPin(req.Pin)
 	if pin == nil {
@@ -135,7 +140,9 @@ func (s *HTTPServer) PostPwm(c *gin.Context) {
 		return
 	}
 
-	err := pin.PWM(req.DutyCycle, req.Period, 5000)
+	log.Println("PWM", pin)
+
+	err = pin.PWM(req.DutyCycle, req.Period, 5000)
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
