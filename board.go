@@ -25,7 +25,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          2,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -33,7 +33,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          3,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -41,7 +41,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          4,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -49,7 +49,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          5,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -57,7 +57,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          6,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -65,7 +65,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          7,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -73,7 +73,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          8,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -81,7 +81,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          9,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -89,7 +89,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          10,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -97,7 +97,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          11,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -105,7 +105,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          12,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -113,7 +113,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          13,
 					PinType:      PinDigital,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: true,
 					PortServer:   ps,
 				},
@@ -121,7 +121,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          14,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -129,7 +129,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          15,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -137,7 +137,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          16,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -145,7 +145,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          17,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -153,7 +153,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          18,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -161,7 +161,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          19,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -169,7 +169,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          20,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -177,7 +177,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 					Pin:          21,
 					PinType:      PinAnalog,
 					Mode:         PinInput,
-					State:        PinLow,
+					State:        DigitalPinLow,
 					PWMSupported: false,
 					PortServer:   ps,
 				},
@@ -189,12 +189,62 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 	}
 }
 
-func (b *Board) GetPin(pin int) *Pin {
+func (b *Board) PinCount() int {
+	return len(b.Pins)
+}
+
+func (b *Board) GetPin(pin int) (*Pin, error) {
 	for _, p := range b.Pins {
 		if p.Pin == pin {
-			return &p
+			return &p, nil
 		}
 	}
 
-	return nil
+	return nil, &PinNotFoundError{}
+}
+
+func (b *Board) GetDigitalPin(pin int) (*Pin, error) {
+	for _, p := range b.Pins {
+		if p.Pin == pin {
+			if p.PinType == PinDigital {
+				return &p, nil
+			}
+
+			return nil, &PinNotDigitalError{}
+		}
+	}
+
+	return nil, &PinNotFoundError{}
+}
+
+func (b *Board) GetAnalogPin(pin int) (*Pin, error) {
+	for _, p := range b.Pins {
+		if p.Pin == pin {
+			if p.PinType == PinAnalog {
+				return &p, nil
+			}
+
+			return nil, &PinNotAnalogError{}
+		}
+	}
+
+	return nil, &PinNotFoundError{}
+}
+
+type PinNotFoundError struct{}
+
+func (e *PinNotFoundError) Error() string {
+	return "Pin not found"
+}
+
+type PinNotDigitalError struct{}
+
+func (e *PinNotDigitalError) Error() string {
+	return "Pin is not digital"
+}
+
+type PinNotAnalogError struct{}
+
+func (e *PinNotAnalogError) Error() string {
+	return "Pin is not analog"
 }

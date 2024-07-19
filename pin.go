@@ -6,7 +6,6 @@ import (
 
 type PinType string
 type PinMode int
-type PinState int
 
 const (
 	PinAnalog  PinType = "analog"
@@ -18,16 +17,17 @@ const (
 	PinOutput PinMode = 1
 )
 
-const (
-	PinLow  PinState = 0
-	PinHigh PinState = 1
-)
+const DigitalPinLow = 0
+const DigitalPinHigh = 1
+
+const AnalogPinMin = 0
+const AnalogPinMax = 255
 
 type Pin struct {
 	Pin          int
 	PinType      PinType
 	Mode         PinMode
-	State        PinState
+	State        int
 	PWMSupported bool
 	PortServer   *PortServer
 	// DutyCycle float32
@@ -35,12 +35,13 @@ type Pin struct {
 
 }
 
+// TODO: Separate the pin into digital and analog pins
 func NewPin(pin int, ps *PortServer) *Pin {
 	return &Pin{
 		Pin:        pin,
 		PinType:    PinDigital,
 		Mode:       PinInput,
-		State:      PinLow,
+		State:      DigitalPinLow,
 		PortServer: ps,
 	}
 }
@@ -51,11 +52,12 @@ func (p *Pin) SetPinType(pinType PinType) {
 
 func (p *Pin) SetPinMode(mode SetupPinRequestMode) error {
 	var pinMode PinMode
-	if mode == Input {
+	switch mode {
+	case Input:
 		pinMode = PinInput
-	} else if mode == Output {
+	case Output:
 		pinMode = PinOutput
-	} else {
+	default:
 		return &InvalidModeError{}
 	}
 
@@ -69,24 +71,55 @@ func (p *Pin) SetPinMode(mode SetupPinRequestMode) error {
 	return nil
 }
 
-func (p *Pin) High() error {
-	err := p.PortServer.WriteDigitalPin(p.Pin, PinHigh)
+func (p *Pin) SetDigitalPinState(state int) error {
+	var err error
+	switch state {
+	case DigitalPinLow:
+		err = p.Low()
+	case DigitalPinHigh:
+		err = p.High()
+	default:
+		return &InvalidDigitalStateError{}
+	}
+
 	if err != nil {
 		return err
 	}
 
-	p.State = PinHigh
+	return nil
+}
+
+func (p *Pin) SetAnalogPinState(state int) error {
+	if state < AnalogPinMin || state > AnalogPinMax {
+		return &InvalidAnalogStateError{}
+	}
+
+	err := p.PortServer.WriteAnalogPin(p.Pin, state)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Pin) High() error {
+	err := p.PortServer.WriteDigitalPin(p.Pin, DigitalPinHigh)
+	if err != nil {
+		return err
+	}
+
+	p.State = DigitalPinHigh
 
 	return nil
 }
 
 func (p *Pin) Low() error {
-	err := p.PortServer.WriteDigitalPin(p.Pin, PinLow)
+	err := p.PortServer.WriteDigitalPin(p.Pin, DigitalPinLow)
 	if err != nil {
 		return err
 	}
 
-	p.State = PinLow
+	p.State = DigitalPinLow
 
 	return nil
 }
@@ -132,6 +165,18 @@ type InvalidModeError struct{}
 
 func (e *InvalidModeError) Error() string {
 	return "invalid mode"
+}
+
+type InvalidDigitalStateError struct{}
+
+func (e *InvalidDigitalStateError) Error() string {
+	return "Invalid digital state. Must be 0 or 1"
+}
+
+type InvalidAnalogStateError struct{}
+
+func (e *InvalidAnalogStateError) Error() string {
+	return "Invalid analog value. Must be between 0 and 255"
 }
 
 type PWMNotSupportedError struct{}

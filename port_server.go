@@ -28,6 +28,7 @@ type Command int
 const (
 	SetupPinCommandType        Command = 1
 	DigitalWritePinCommandType Command = 2
+	AnalogWritePinCommandType  Command = 3
 )
 
 // cmd: 1 (setup_pin)
@@ -39,6 +40,13 @@ type SetupPinCommand struct {
 
 // cmd: 2 (digital_write_pin)
 type DigitalWritePinCommand struct {
+	Command uint `json:"c"`
+	Pin     uint `json:"p"`
+	Value   uint `json:"v"`
+}
+
+// cmd: 3 (analog_write_pin)
+type AnalogWritePinCommand struct {
 	Command uint `json:"c"`
 	Pin     uint `json:"p"`
 	Value   uint `json:"v"`
@@ -166,9 +174,29 @@ func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
 	return nil
 }
 
-func (ps *PortServer) WriteDigitalPin(pin int, value PinState) error {
+func (ps *PortServer) WriteDigitalPin(pin int, value int) error {
 	command := DigitalWritePinCommand{
 		Command: uint(DigitalWritePinCommandType),
+		Pin:     uint(pin),
+		Value:   uint(value),
+	}
+
+	json, err := json.Marshal(command)
+	if err != nil {
+		return err
+	}
+
+	err = ps.Write(json)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ps *PortServer) WriteAnalogPin(pin int, value int) error {
+	command := AnalogWritePinCommand{
+		Command: uint(AnalogWritePinCommandType),
 		Pin:     uint(pin),
 		Value:   uint(value),
 	}
