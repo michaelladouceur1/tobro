@@ -13,6 +13,18 @@ const (
 	Output SetupPinRequestMode = "output"
 )
 
+// AnalogWritePinRequest defines model for AnalogWritePinRequest.
+type AnalogWritePinRequest struct {
+	Pin   int `json:"pin"`
+	Value int `json:"value"`
+}
+
+// AnalogWritePinResponse defines model for AnalogWritePinResponse.
+type AnalogWritePinResponse struct {
+	Pin   *int `json:"pin,omitempty"`
+	Value *int `json:"value,omitempty"`
+}
+
 // ConnectRequest defines model for ConnectRequest.
 type ConnectRequest struct {
 	Port string `json:"port"`
@@ -24,6 +36,12 @@ type ConnectResponse struct {
 	Timestamp *int    `json:"timestamp,omitempty"`
 }
 
+// DigitalWritePinRequest defines model for DigitalWritePinRequest.
+type DigitalWritePinRequest struct {
+	Pin   int `json:"pin"`
+	Value int `json:"value"`
+}
+
 // DigitalWritePinResponse defines model for DigitalWritePinResponse.
 type DigitalWritePinResponse struct {
 	Pin   *int `json:"pin,omitempty"`
@@ -33,13 +51,6 @@ type DigitalWritePinResponse struct {
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
 	Message *string `json:"message,omitempty"`
-}
-
-// PWMRequest defines model for PWMRequest.
-type PWMRequest struct {
-	DutyCycle int `json:"duty_cycle"`
-	Period    int `json:"period"`
-	Pin       int `json:"pin"`
 }
 
 // Pong defines model for Pong.
@@ -62,26 +73,23 @@ type SetupPinResponse struct {
 	Pin  *int    `json:"pin,omitempty"`
 }
 
-// WritePinRequest defines model for WritePinRequest.
-type WritePinRequest struct {
-	Pin   int `json:"pin"`
-	Value int `json:"value"`
-}
+// PostAnalogWritePinJSONRequestBody defines body for PostAnalogWritePin for application/json ContentType.
+type PostAnalogWritePinJSONRequestBody = AnalogWritePinRequest
 
 // PostConnectJSONRequestBody defines body for PostConnect for application/json ContentType.
 type PostConnectJSONRequestBody = ConnectRequest
 
 // PostDigitalWritePinJSONRequestBody defines body for PostDigitalWritePin for application/json ContentType.
-type PostDigitalWritePinJSONRequestBody = WritePinRequest
-
-// PostPwmJSONRequestBody defines body for PostPwm for application/json ContentType.
-type PostPwmJSONRequestBody = PWMRequest
+type PostDigitalWritePinJSONRequestBody = DigitalWritePinRequest
 
 // PostSetupPinJSONRequestBody defines body for PostSetupPin for application/json ContentType.
 type PostSetupPinJSONRequestBody = SetupPinRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (POST /analog_write_pin)
+	PostAnalogWritePin(c *gin.Context)
 
 	// (POST /connect)
 	PostConnect(c *gin.Context)
@@ -91,9 +99,6 @@ type ServerInterface interface {
 
 	// (GET /ping)
 	GetPing(c *gin.Context)
-
-	// (POST /pwm)
-	PostPwm(c *gin.Context)
 
 	// (POST /setup_pin)
 	PostSetupPin(c *gin.Context)
@@ -107,6 +112,19 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// PostAnalogWritePin operation middleware
+func (siw *ServerInterfaceWrapper) PostAnalogWritePin(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAnalogWritePin(c)
+}
 
 // PostConnect operation middleware
 func (siw *ServerInterfaceWrapper) PostConnect(c *gin.Context) {
@@ -145,19 +163,6 @@ func (siw *ServerInterfaceWrapper) GetPing(c *gin.Context) {
 	}
 
 	siw.Handler.GetPing(c)
-}
-
-// PostPwm operation middleware
-func (siw *ServerInterfaceWrapper) PostPwm(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostPwm(c)
 }
 
 // PostSetupPin operation middleware
@@ -200,9 +205,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
+	router.POST(options.BaseURL+"/analog_write_pin", wrapper.PostAnalogWritePin)
 	router.POST(options.BaseURL+"/connect", wrapper.PostConnect)
 	router.POST(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin)
 	router.GET(options.BaseURL+"/ping", wrapper.GetPing)
-	router.POST(options.BaseURL+"/pwm", wrapper.PostPwm)
 	router.POST(options.BaseURL+"/setup_pin", wrapper.PostSetupPin)
 }

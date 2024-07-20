@@ -1,14 +1,15 @@
 apis/DefaultApi.ts
 apis/index.ts
 index.ts
+models/AnalogWritePinRequest.ts
+models/AnalogWritePinResponse.ts
 models/ConnectRequest.ts
 models/ConnectResponse.ts
+models/DigitalWritePinRequest.ts
 models/DigitalWritePinResponse.ts
 models/ErrorResponse.ts
-models/PWMRequest.ts
 models/Pong.ts
 models/SetupPinRequest.ts
 models/SetupPinResponse.ts
-models/WritePinRequest.ts
 models/index.ts
 runtime.ts

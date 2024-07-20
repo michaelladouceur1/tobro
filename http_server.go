@@ -86,7 +86,7 @@ func (s *HTTPServer) PostSetupPin(c *gin.Context) {
 
 // (POST /digital_write_pin)
 func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
-	var req WritePinRequest
+	var req DigitalWritePinRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		err := err.Error()
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
@@ -111,18 +111,14 @@ func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
 	c.JSON(http.StatusOK, DigitalWritePinResponse{Pin: &req.Pin, Value: &req.Value})
 }
 
-// (POST /pwm)
-func (s *HTTPServer) PostPwm(c *gin.Context) {
-	var req PWMRequest
-	// json, err := json.Marshal(req)
-	// log.Println("PostPwm", string(json))
+// (POST /analog_write_pin)
+func (s *HTTPServer) PostAnalogWritePin(c *gin.Context) {
+	var req AnalogWritePinRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		err := err.Error()
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
 		return
 	}
-
-	log.Println("PWM", req)
 
 	pin, err := board.GetPin(req.Pin)
 	if err != nil {
@@ -131,17 +127,13 @@ func (s *HTTPServer) PostPwm(c *gin.Context) {
 		return
 	}
 
-	log.Println("PWM", pin)
+	err = pin.SetAnalogPinState(req.Value)
 
-	err = pin.PWM(req.DutyCycle, req.Period, 5000)
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
 		return
 	}
 
-	value := 1
-	c.JSON(http.StatusOK, DigitalWritePinResponse{Pin: &req.Pin, Value: &value})
-
-	// c.JSON(http.StatusOK, PWM{Pin: &req.Pin, DutyCycle: &req.DutyCycle, Period: &req.Period})
+	c.JSON(http.StatusOK, AnalogWritePinResponse{Pin: &req.Pin, Value: &req.Value})
 }

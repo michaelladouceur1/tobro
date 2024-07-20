@@ -61,7 +61,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WritePinRequest'
+              $ref: '#/components/schemas/DigitalWritePinRequest'
       responses:
         '200':
           description: Write pin post response
@@ -75,23 +75,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /pwm:
+  /analog_write_pin:
     post:
       requestBody:
-        description: Set PWM
+        description: Write to a pin
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PWMRequest'
+              $ref: '#/components/schemas/AnalogWritePinRequest'
       responses:
         '200':
-          description: PWM post response
+          description: Write pin post response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DigitalWritePinResponse'
+                $ref: '#/components/schemas/AnalogWritePinResponse'
         '400':
-          description: PWM post error response
+          description: Write pin post error response
           content:
             application/json:
               schema:
@@ -153,7 +153,7 @@ components:
           example: 1
         mode:
           type: string
-    WritePinRequest:
+    DigitalWritePinRequest:
       type: object
       required:
         - pin
@@ -176,20 +176,26 @@ components:
           type: integer
           minimum: 0
           maximum: 1
-    PWMRequest:
+    AnalogWritePinRequest:
       type: object
       required:
         - pin
-        - duty_cycle
-        - period
+        - value
       properties:
         pin:
           type: integer
           example: 1
-        duty_cycle:
+        value:
           type: integer
           minimum: 0
-          maximum: 100
-        period:
+          maximum: 255
+    AnalogWritePinResponse:
+      type: object
+      properties:
+        pin:
           type: integer
-          minimum: 1
+          example: 1
+        value:
+          type: integer
+          minimum: 0
+          maximum: 255

@@ -32,7 +32,6 @@ type Pin struct {
 	PortServer   *PortServer
 	// DutyCycle float32
 	// Period    int
-
 }
 
 // TODO: Separate the pin into digital and analog pins

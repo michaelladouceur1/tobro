@@ -9,10 +9,8 @@ import "./App.css";
 function App() {
   const api = useHttpApi();
 
-  const [delay, setDelay] = useState(100);
   const [port, setPort] = useState<number | null>(null);
-  const [pwmDutyCycle, setPwmDutyCycle] = useState(50);
-  const [pwmPeriod, setPwmPeriod] = useState(10);
+  const [analogValue, setAnalogValue] = useState(50);
 
   const [ports, setPorts] = useAtom(portsAtom);
 
@@ -58,12 +56,21 @@ function App() {
       <div>
         <h2>Digital Write Pin</h2>
         <TextField
-          label="Value"
+          label="Port"
           type="number"
           size="small"
           value={port}
           onChange={(event) => {
             setPort(parseInt(event.target.value));
+          }}
+        />
+        <TextField
+          label="Value"
+          type="number"
+          size="small"
+          value={analogValue}
+          onChange={(event) => {
+            setAnalogValue(parseInt(event.target.value));
           }}
         />
         <Button
@@ -83,7 +90,9 @@ function App() {
             if (port === null) {
               return;
             }
-            api.digitalWritePinPost({writePinRequest: {pin: port, value: 1}});
+            api.digitalWritePinPost({
+              digitalWritePinRequest: {pin: port, value: 1},
+            });
           }}
         >
           High
@@ -94,50 +103,27 @@ function App() {
             if (port === null) {
               return;
             }
-            api.digitalWritePinPost({writePinRequest: {pin: port, value: 0}});
+            api.digitalWritePinPost({
+              digitalWritePinRequest: {pin: port, value: 0},
+            });
           }}
         >
           Low
         </Button>
         <Button
           variant="outlined"
-          onClick={() => {
+          onClick={async () => {
             if (port === null) {
               return;
             }
-            console.log(`${port} ${pwmDutyCycle} ${pwmPeriod}`);
-            api.pwmPost({
-              pWMRequest: {
-                pin: port,
-                dutyCycle: pwmDutyCycle,
-                period: pwmPeriod,
-              },
+            const res = await api.analogWritePinPost({
+              analogWritePinRequest: {pin: port, value: analogValue},
             });
+            console.log(res);
           }}
         >
-          PWM
+          Analog
         </Button>
-      </div>
-      <div>
-        <TextField
-          label="Duty Cycle"
-          type="number"
-          size="small"
-          InputProps={{inputProps: {min: 1, max: 100}}}
-          value={pwmDutyCycle}
-          onChange={(event) => {
-            setPwmDutyCycle(parseInt(event.target.value));
-          }}
-        />
-        <TextField
-          label="Period"
-          type="number"
-          size="small"
-          value={pwmPeriod}
-          onChange={(event) => {
-            setPwmPeriod(parseInt(event.target.value));
-          }}
-        />
       </div>
     </div>
   );
