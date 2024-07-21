@@ -12,223 +12,127 @@ const (
 )
 
 type Board struct {
-	Pins []Pin
+	DigitalPins []DigitalPin
+	AnalogPins  []AnalogPin
 }
 
 func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
-	// TODO: move pin configuration to a separate file
 	switch boardType {
 	case ArduinoNano:
 		return &Board{
-			Pins: []Pin{
-				{
-					Pin:          2,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          3,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          4,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          5,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          6,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          7,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          8,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          9,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          10,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          11,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          12,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          13,
-					PinType:      PinDigital,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: true,
-					PortServer:   ps,
-				},
-				{
-					Pin:          14,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          15,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          16,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          17,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          18,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          19,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          20,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
-				{
-					Pin:          21,
-					PinType:      PinAnalog,
-					Mode:         PinInput,
-					State:        DigitalPinLow,
-					PWMSupported: false,
-					PortServer:   ps,
-				},
+			DigitalPins: []DigitalPin{
+				*NewDigitalPin(2, false, ps),
+				*NewDigitalPin(3, true, ps),
+				*NewDigitalPin(4, false, ps),
+				*NewDigitalPin(5, true, ps),
+				*NewDigitalPin(6, true, ps),
+				*NewDigitalPin(7, false, ps),
+				*NewDigitalPin(8, false, ps),
+				*NewDigitalPin(9, true, ps),
+				*NewDigitalPin(10, true, ps),
+				*NewDigitalPin(11, true, ps),
+				*NewDigitalPin(12, false, ps),
+				*NewDigitalPin(13, true, ps),
+			},
+			AnalogPins: []AnalogPin{
+				*NewAnalogPin(14, ps),
+				*NewAnalogPin(15, ps),
+				*NewAnalogPin(16, ps),
+				*NewAnalogPin(17, ps),
+				*NewAnalogPin(18, ps),
+				*NewAnalogPin(19, ps),
+				*NewAnalogPin(20, ps),
+				*NewAnalogPin(21, ps),
 			},
 		}
 	default:
 		return nil
-
 	}
 }
 
 func (b *Board) PinCount() int {
-	return len(b.Pins)
+	return len(b.DigitalPins) + len(b.AnalogPins)
 }
 
-func (b *Board) GetPin(pin int) (*Pin, error) {
-	for _, p := range b.Pins {
-		if p.Pin == pin {
-			return &p, nil
-		}
+func (b *Board) GetPin(id int) (Pin, error) {
+	digitalPin := b.GetDigitalPin(id)
+	if digitalPin != nil {
+		return digitalPin, nil
+	}
+
+	analogPin := b.GetAnalogPin(id)
+	if analogPin != nil {
+		return analogPin, nil
+	}
+
+	return nil, &PinNotFoundError{}
+
+}
+
+func (b *Board) GetDigitalWritePin(id int) (DigitalWritePin, error) {
+	pin := b.GetDigitalPin(id)
+	if pin == nil {
+		return nil, &PinNotFoundError{}
+	}
+
+	return pin, nil
+}
+
+func (b *Board) GetAnalogWritePin(id int) (AnalogWritePin, error) {
+	analogPin := b.GetAnalogPin(id)
+	if analogPin != nil {
+		return analogPin, nil
+	}
+
+	pwmPin := b.GetPWMPin(id)
+	if pwmPin != nil {
+		return pwmPin, nil
 	}
 
 	return nil, &PinNotFoundError{}
 }
 
-func (b *Board) GetDigitalPin(pin int) (*Pin, error) {
-	for _, p := range b.Pins {
-		if p.Pin == pin {
+func (b *Board) GetDigitalPin(id int) *DigitalPin {
+	for _, p := range b.DigitalPins {
+		if p.ID == id {
 			if p.PinType == PinDigital {
-				return &p, nil
+				return &p
 			}
 
-			return nil, &PinNotDigitalError{}
+			return nil
 		}
 	}
 
-	return nil, &PinNotFoundError{}
+	return nil
 }
 
-func (b *Board) GetAnalogPin(pin int) (*Pin, error) {
-	for _, p := range b.Pins {
-		if p.Pin == pin {
+func (b *Board) GetAnalogPin(id int) *AnalogPin {
+	for _, p := range b.AnalogPins {
+		if p.ID == id {
 			if p.PinType == PinAnalog {
-				return &p, nil
+				return &p
 			}
 
-			return nil, &PinNotAnalogError{}
+			return nil
 		}
 	}
 
-	return nil, &PinNotFoundError{}
+	return nil
+}
+
+func (b *Board) GetPWMPin(id int) *DigitalPin {
+	for _, p := range b.DigitalPins {
+		if p.ID == id {
+			if p.PWM {
+				return &p
+			}
+
+			return nil
+		}
+	}
+
+	return nil
+
 }
 
 type PinNotFoundError struct{}

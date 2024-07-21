@@ -73,7 +73,7 @@ func (s *HTTPServer) PostSetupPin(c *gin.Context) {
 		return
 	}
 
-	err = pin.SetPinMode(req.Mode)
+	err = pin.SetMode(req.Mode)
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
@@ -93,14 +93,14 @@ func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
 		return
 	}
 
-	pin, err := board.GetPin(req.Pin)
+	pin, err := board.GetDigitalWritePin(req.Pin)
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
 		return
 	}
 
-	err = pin.SetDigitalPinState(req.Value)
+	err = pin.SetDigitalState(req.Value)
 
 	if err != nil {
 		err := err.Error()
@@ -120,14 +120,14 @@ func (s *HTTPServer) PostAnalogWritePin(c *gin.Context) {
 		return
 	}
 
-	pin, err := board.GetPin(req.Pin)
+	pin, err := board.GetAnalogWritePin(req.Pin)
 	if err != nil {
 		err := err.Error()
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
 		return
 	}
 
-	err = pin.SetAnalogPinState(req.Value)
+	err = pin.SetAnalogState(req.Value)
 
 	if err != nil {
 		err := err.Error()

@@ -1,9 +1,5 @@
 package main
 
-import (
-	"time"
-)
-
 type PinType string
 type PinMode int
 
@@ -23,33 +19,78 @@ const DigitalPinHigh = 1
 const AnalogPinMin = 0
 const AnalogPinMax = 255
 
-type Pin struct {
-	Pin          int
-	PinType      PinType
-	Mode         PinMode
-	State        int
-	PWMSupported bool
-	PortServer   *PortServer
-	// DutyCycle float32
-	// Period    int
+type Pin interface {
+	SetMode(mode SetupPinRequestMode) error
+	High() error
+	Low() error
+	// SetState(state int) error
+	// SetAnalogState(state int) error
 }
 
-// TODO: Separate the pin into digital and analog pins
-func NewPin(pin int, ps *PortServer) *Pin {
-	return &Pin{
-		Pin:        pin,
-		PinType:    PinDigital,
-		Mode:       PinInput,
-		State:      DigitalPinLow,
-		PortServer: ps,
+type DigitalWritePin interface {
+	SetDigitalState(state int) error
+}
+
+type AnalogWritePin interface {
+	SetAnalogState(state int) error
+}
+
+type pin struct {
+	ID         int
+	PinType    PinType
+	Mode       PinMode
+	State      int
+	Min        int
+	Max        int
+	PortServer *PortServer
+}
+
+type DigitalPin struct {
+	PWM bool
+	pin
+}
+
+type AnalogPin struct {
+	pin
+}
+
+func NewDigitalPin(id int, pwm bool, ps *PortServer) *DigitalPin {
+	var min, max int
+	if pwm {
+		min, max = AnalogPinMin, AnalogPinMax
+	} else {
+		min, max = DigitalPinLow, DigitalPinHigh
+	}
+
+	return &DigitalPin{
+		pin: pin{
+			ID:         id,
+			PinType:    PinDigital,
+			Mode:       PinInput,
+			State:      DigitalPinLow,
+			Min:        min,
+			Max:        max,
+			PortServer: ps,
+		},
+		PWM: pwm,
 	}
 }
 
-func (p *Pin) SetPinType(pinType PinType) {
-	p.PinType = pinType
+func NewAnalogPin(id int, ps *PortServer) *AnalogPin {
+	return &AnalogPin{
+		pin: pin{
+			ID:         id,
+			PinType:    PinDigital,
+			Mode:       PinInput,
+			State:      DigitalPinLow,
+			Min:        AnalogPinMin,
+			Max:        AnalogPinMax,
+			PortServer: ps,
+		},
+	}
 }
 
-func (p *Pin) SetPinMode(mode SetupPinRequestMode) error {
+func (p *pin) SetMode(mode SetupPinRequestMode) error {
 	var pinMode PinMode
 	switch mode {
 	case Input:
@@ -60,7 +101,7 @@ func (p *Pin) SetPinMode(mode SetupPinRequestMode) error {
 		return &InvalidModeError{}
 	}
 
-	err := p.PortServer.SetupPin(p.Pin, pinMode)
+	err := p.PortServer.SetupPin(p.ID, pinMode)
 	if err != nil {
 		return err
 	}
@@ -70,7 +111,66 @@ func (p *Pin) SetPinMode(mode SetupPinRequestMode) error {
 	return nil
 }
 
-func (p *Pin) SetDigitalPinState(state int) error {
+func (p *pin) DigitalValid() bool {
+	return p.PinType == PinDigital
+}
+
+func (p *DigitalPin) High() error {
+	err := p.PortServer.WriteDigitalPin(p.ID, p.Max)
+	if err != nil {
+		return err
+	}
+
+	p.State = p.Max
+
+	return nil
+}
+
+func (p *DigitalPin) Low() error {
+	err := p.PortServer.WriteDigitalPin(p.ID, p.Min)
+	if err != nil {
+		return err
+	}
+
+	p.State = p.Min
+
+	return nil
+}
+
+func (p *AnalogPin) High() error {
+	err := p.PortServer.WriteAnalogPin(p.ID, p.Max)
+	if err != nil {
+		return err
+	}
+
+	p.State = p.Max
+
+	return nil
+}
+
+func (p *AnalogPin) Low() error {
+	err := p.PortServer.WriteAnalogPin(p.ID, p.Min)
+	if err != nil {
+		return err
+	}
+
+	p.State = p.Min
+
+	return nil
+}
+
+func (p *DigitalPin) SetAnalogState(state int) error {
+	if !p.PWM {
+		return &PWMNotSupportedError{}
+	}
+	return p.setAnalogState(state)
+}
+
+func (p *AnalogPin) SetAnalogState(state int) error {
+	return p.setAnalogState(state)
+}
+
+func (p *DigitalPin) SetDigitalState(state int) error {
 	var err error
 	switch state {
 	case DigitalPinLow:
@@ -88,12 +188,12 @@ func (p *Pin) SetDigitalPinState(state int) error {
 	return nil
 }
 
-func (p *Pin) SetAnalogPinState(state int) error {
-	if state < AnalogPinMin || state > AnalogPinMax {
+func (p *pin) setAnalogState(state int) error {
+	if state < p.Min || state > p.Max {
 		return &InvalidAnalogStateError{}
 	}
 
-	err := p.PortServer.WriteAnalogPin(p.Pin, state)
+	err := p.PortServer.WriteAnalogPin(p.ID, state)
 	if err != nil {
 		return err
 	}
@@ -101,64 +201,42 @@ func (p *Pin) SetAnalogPinState(state int) error {
 	return nil
 }
 
-func (p *Pin) High() error {
-	err := p.PortServer.WriteDigitalPin(p.Pin, DigitalPinHigh)
-	if err != nil {
-		return err
-	}
+// func (p *DigitalPin) PWM(dutyCycle int, period int, duration int) error {
+// 	if !p.PWM {
+// 		return &PWMNotSupportedError{}
+// 	}
 
-	p.State = DigitalPinHigh
+// 	dutyCycleFloat := float32(dutyCycle) / 100
+// 	timeHigh := int(float32(period) * dutyCycleFloat)
+// 	timeLow := period - timeHigh
 
-	return nil
-}
+// 	for {
 
-func (p *Pin) Low() error {
-	err := p.PortServer.WriteDigitalPin(p.Pin, DigitalPinLow)
-	if err != nil {
-		return err
-	}
+// 		if duration == 0 {
+// 			break
+// 		}
 
-	p.State = DigitalPinLow
+// 		err := p.High()
+// 		if err != nil {
+// 			return err
+// 		}
 
-	return nil
-}
+// 		time.Sleep(time.Duration(timeHigh) * time.Millisecond)
 
-func (p *Pin) PWM(dutyCycle int, period int, duration int) error {
-	if !p.PWMSupported {
-		return &PWMNotSupportedError{}
-	}
+// 		err = p.Low()
+// 		if err != nil {
+// 			return err
+// 		}
 
-	dutyCycleFloat := float32(dutyCycle) / 100
-	timeHigh := int(float32(period) * dutyCycleFloat)
-	timeLow := period - timeHigh
+// 		time.Sleep(time.Duration(timeLow) * time.Millisecond)
 
-	for {
+// 		if duration > 0 {
+// 			duration -= period
+// 		}
+// 	}
 
-		if duration == 0 {
-			break
-		}
-
-		err := p.High()
-		if err != nil {
-			return err
-		}
-
-		time.Sleep(time.Duration(timeHigh) * time.Millisecond)
-
-		err = p.Low()
-		if err != nil {
-			return err
-		}
-
-		time.Sleep(time.Duration(timeLow) * time.Millisecond)
-
-		if duration > 0 {
-			duration -= period
-		}
-	}
-
-	return nil
-}
+// 	return nil
+// }
 
 type InvalidModeError struct{}
 
