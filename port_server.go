@@ -9,8 +9,9 @@ import (
 )
 
 type PortServer struct {
+	PortName     string
 	Port         serial.Port
-	AvaiblePorts []string
+	AvaiblePorts chan []string
 	Settings     serial.Mode
 }
 
@@ -55,45 +56,35 @@ type AnalogWritePinCommand struct {
 func NewPortServer() *PortServer {
 	return &PortServer{
 		Port:         nil,
-		AvaiblePorts: []string{},
+		AvaiblePorts: make(chan []string),
 		Settings: serial.Mode{
 			BaudRate: 115200,
 		},
 	}
 }
 
-func (ps *PortServer) PopulatePorts() error {
-	ports, err := serial.GetPortsList()
-	if err != nil {
-		return err
-	}
-
-	ps.AvaiblePorts = ports
-
-	return nil
-}
-
-func (ps *PortServer) WatchPorts() chan WatchPortsResult {
-	ch := make(chan WatchPortsResult)
-
-	go func() {
-		for {
-			ports, err := serial.GetPortsList()
-			if err != nil {
-				ch <- WatchPortsResult{Error: err}
-				continue
-			}
-
-			if len(ports) != len(ps.AvaiblePorts) {
-				ps.AvaiblePorts = ports
-				ch <- WatchPortsResult{Data: ports}
-			}
-
-			ch <- WatchPortsResult{Data: nil}
+func (ps *PortServer) WatchPorts() {
+	for {
+		ports, err := serial.GetPortsList()
+		if err != nil {
+			continue
 		}
-	}()
 
-	return ch
+		ps.AvaiblePorts <- ports
+
+		// if ps.Port != nil && ps.PortName != "" {
+		// 	if err = ps.PortExists(ps.PortName); err != nil {
+		// 		log.Print("Port does not exist")
+		// 		ps.ClosePort()
+		// 	}
+
+		// 	continue
+		// }
+
+		log.Print("Watching ports")
+
+		time.Sleep(1 * time.Second)
+	}
 }
 
 func (ps *PortServer) OpenPort(port string) error {
@@ -116,6 +107,24 @@ func (ps *PortServer) OpenPort(port string) error {
 		return err
 	}
 
+	ps.PortName = port
+
+	return nil
+}
+
+func (ps *PortServer) ClosePort() error {
+	if ps.Port == nil {
+		return nil
+	}
+
+	err := ps.Port.Close()
+	if err != nil {
+		return err
+	}
+
+	ps.Port = nil
+	ps.PortName = ""
+
 	return nil
 }
 
@@ -135,21 +144,6 @@ func (ps *PortServer) attemptOpenPort(attempts int, port string) error {
 
 		break
 	}
-
-	return nil
-}
-
-func (ps *PortServer) ClosePort() error {
-	if ps.Port == nil {
-		return nil
-	}
-
-	err := ps.Port.Close()
-	if err != nil {
-		return err
-	}
-
-	ps.Port = nil
 
 	return nil
 }
@@ -270,10 +264,15 @@ func (ps *PortServer) ListenToPort() chan ListenToPortResult {
 }
 
 func (ps *PortServer) PortExists(port string) error {
-	for _, p := range ps.AvaiblePorts {
+	availablePorts := <-ps.AvaiblePorts
+	log.Print(availablePorts)
+	for _, p := range availablePorts {
+		log.Print(p)
 		if p == port {
+			log.Print("Port exists")
 			return nil
 		}
+		log.Print("Port does not exist")
 	}
 
 	return &PortDoesNotExistError{}

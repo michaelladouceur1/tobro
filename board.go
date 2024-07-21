@@ -32,7 +32,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 				*NewDigitalPin(10, true, ps),
 				*NewDigitalPin(11, true, ps),
 				*NewDigitalPin(12, false, ps),
-				*NewDigitalPin(13, true, ps),
+				*NewDigitalPin(13, false, ps),
 			},
 			AnalogPins: []AnalogPin{
 				*NewAnalogPin(14, ps),
@@ -52,6 +52,10 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 
 func (b *Board) PinCount() int {
 	return len(b.DigitalPins) + len(b.AnalogPins)
+}
+
+func (b *Board) GetState() Board {
+	return *b
 }
 
 func (b *Board) GetPin(id int) (Pin, error) {

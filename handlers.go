@@ -40,6 +40,16 @@ type PortsResponseData struct {
 	Ports []string `json:"ports"`
 }
 
+func createBoardResponse(board Board) BaseResponse[Board] {
+	return BaseResponse[Board]{
+		Type: "board",
+		Data: Board{
+			DigitalPins: board.DigitalPins,
+			AnalogPins:  board.AnalogPins,
+		},
+	}
+}
+
 func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 	return BaseResponse[PortsResponseData]{
 		Type: "ports",
@@ -92,88 +102,45 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	portsChan := portServer.WatchPorts()
+	// sendBoardState(c)
+	go watchPorts(c)
 
-	for result := range portsChan {
-		if result.Error != nil {
-			log.Fatal(result.Error)
-			return
+	for {
+		_, _, err := c.ReadMessage()
+		if err != nil {
+			log.Print("read:", err)
+			break
 		}
-
-		if result.Data != nil {
-			json, err := json.Marshal(createPortsResponse(result.Data))
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-
-			// err = portServer.OpenPort(portServer.AvaiblePorts[0])
-			// if err != nil {
-			// 	log.Fatal(err)
-			// 	return
-			// }
-
-			// portServer.ListenToPort()
-
-			err = c.WriteMessage(websocket.TextMessage, json)
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-		}
-
 	}
 }
 
-// type ConnectData struct {
-// 	Port string `json:"port"`
-// }
+func sendBoardState(c *websocket.Conn) {
+	boardState := board.GetState()
+	json, err := json.Marshal(createBoardResponse(boardState))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// func connectHandler(w http.ResponseWriter, r *http.Request) {
-// 	var data ConnectData
-// 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
+	err = c.WriteMessage(websocket.TextMessage, json)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-// 	log.Printf("connectHandler: %v", data)
+func watchPorts(c *websocket.Conn) {
+	go portServer.WatchPorts()
 
-// 	err := portServer.OpenPort(data.Port)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 		return
-// 	}
+	for ports := range portServer.AvaiblePorts {
+		json, err := json.Marshal(createPortsResponse(ports))
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
 
-// 	portServer.ListenToPort()
-
-// 	w.WriteHeader(http.StatusNoContent)
-// 	w.Write(createSuccessResponse("connected"))
-// }
-
-// func delayHandler(w http.ResponseWriter, r *http.Request) {
-// 	log.Print("Delay handler called")
-// 	var input Input
-// 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	command := Command{
-// 		Command: "delay",
-// 		Delay:   input.Delay,
-// 	}
-
-// 	json, err := json.Marshal(command)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	commandWithNewline := append(json, '\n')
-
-// 	err = portServer.Write(commandWithNewline)
-// 	if err != nil {
-// 		log.Fatal("ERRORRRRRR: ", err)
-// 		return
-// 	}
-// }
+		err = c.WriteMessage(websocket.TextMessage, json)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	}
+}

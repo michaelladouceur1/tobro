@@ -5,6 +5,7 @@ import {portsAtom} from "./atoms/portsAtom";
 import {useHttpApi} from "./hooks/useHttpApi";
 
 import "./App.css";
+import {boardAtom} from "./atoms/boardAtom";
 
 function App() {
   const api = useHttpApi();
@@ -12,6 +13,7 @@ function App() {
   const [port, setPort] = useState<number | null>(null);
   const [analogValue, setAnalogValue] = useState(50);
 
+  const [board, setBoard] = useAtom(boardAtom);
   const [ports, setPorts] = useAtom(portsAtom);
 
   useEffect(() => {
@@ -24,12 +26,22 @@ function App() {
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
+      if (message.type === "board") {
+        console.log("MESSAGE: ", message);
+        const {board} = message.data;
+        setBoard(board);
+      }
+
       if (message.type === "ports") {
         const {ports} = message.data;
         setPorts({ports});
       }
     };
   }, []);
+
+  useEffect(() => {
+    console.log("Board: ", board);
+  }, [board]);
 
   return (
     <div>
