@@ -52,19 +52,18 @@ func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 	client := &WSClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
+	sendBoardState(client)
+
 	go client.Write()
 	go client.Read()
 }
 
-func sendBoardState(c *websocket.Conn) {
+func sendBoardState(c *WSClient) {
 	boardState := board.GetState()
 	json, err := json.Marshal(createBoardResponse(boardState))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = c.WriteMessage(websocket.TextMessage, json)
-	if err != nil {
-		log.Fatal(err)
-	}
+	c.send <- json
 }

@@ -1,5 +1,7 @@
 package main
 
+import "encoding/json"
+
 type PinType string
 type PinMode int
 
@@ -36,13 +38,13 @@ type AnalogWritePin interface {
 }
 
 type pin struct {
+	PortServer *PortServer
 	ID         int
 	PinType    PinType
 	Mode       PinMode
-	State      int
 	Min        int
 	Max        int
-	PortServer *PortServer
+	State      chan int
 }
 
 type DigitalPin struct {
@@ -64,13 +66,13 @@ func NewDigitalPin(id int, pwm bool, ps *PortServer) *DigitalPin {
 
 	return &DigitalPin{
 		pin: pin{
+			PortServer: ps,
 			ID:         id,
 			PinType:    PinDigital,
 			Mode:       PinInput,
-			State:      DigitalPinLow,
 			Min:        min,
 			Max:        max,
-			PortServer: ps,
+			State:      make(chan int),
 		},
 		PWM: pwm,
 	}
@@ -79,15 +81,32 @@ func NewDigitalPin(id int, pwm bool, ps *PortServer) *DigitalPin {
 func NewAnalogPin(id int, ps *PortServer) *AnalogPin {
 	return &AnalogPin{
 		pin: pin{
+			PortServer: ps,
 			ID:         id,
-			PinType:    PinDigital,
+			PinType:    PinAnalog,
 			Mode:       PinInput,
-			State:      DigitalPinLow,
 			Min:        AnalogPinMin,
 			Max:        AnalogPinMax,
-			PortServer: ps,
+			State:      make(chan int),
 		},
 	}
+}
+
+func (p *DigitalPin) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"id":   p.ID,
+		"type": p.PinType,
+		"mode": p.Mode,
+		"pwm":  p.PWM,
+	})
+}
+
+func (p *AnalogPin) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"id":   p.ID,
+		"type": p.PinType,
+		"mode": p.Mode,
+	})
 }
 
 func (p *pin) SetMode(mode SetupPinRequestMode) error {
@@ -121,7 +140,7 @@ func (p *DigitalPin) High() error {
 		return err
 	}
 
-	p.State = p.Max
+	p.State <- p.Max
 
 	return nil
 }
@@ -132,7 +151,7 @@ func (p *DigitalPin) Low() error {
 		return err
 	}
 
-	p.State = p.Min
+	p.State <- p.Min
 
 	return nil
 }
@@ -143,7 +162,7 @@ func (p *AnalogPin) High() error {
 		return err
 	}
 
-	p.State = p.Max
+	p.State <- p.Max
 
 	return nil
 }
@@ -154,7 +173,7 @@ func (p *AnalogPin) Low() error {
 		return err
 	}
 
-	p.State = p.Min
+	p.State <- p.Min
 
 	return nil
 }
@@ -197,6 +216,8 @@ func (p *pin) setAnalogState(state int) error {
 	if err != nil {
 		return err
 	}
+
+	p.State <- state
 
 	return nil
 }
