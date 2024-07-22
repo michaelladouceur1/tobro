@@ -30,6 +30,12 @@ func main() {
 	portServer = NewPortServer()
 	httpServer = NewHTTPServer()
 
+	hub := NewWSHub()
+	go hub.Run()
+
+	monitor := NewMonitor(hub, portServer)
+	go monitor.Run()
+
 	board = NewBoard(ArduinoNano, portServer)
 
 	route := mux.NewRouter()
@@ -37,7 +43,9 @@ func main() {
 	route.Use(enableCORS)
 
 	h := HandlerFromMux(httpServer, route)
-	route.HandleFunc("/ws", websocketHandler)
+	route.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
 	route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
 
 	s := &http.Server{

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -12,19 +11,6 @@ import (
 type SuccessResponse struct {
 	Message string `json:"message"`
 }
-
-// func createSuccessResponse(message string) []byte {
-// 	res := SuccessResponse{
-// 		Message: message,
-// 	}
-
-// 	json, err := json.Marshal(res)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	return json
-// }
 
 type BaseResponse[T any] struct {
 	Type string `json:"type"`
@@ -56,25 +42,18 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 
 var upgrader = websocket.Upgrader{}
 
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
+func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		log.Print(err)
 		return
 	}
-	defer c.Close()
 
-	// sendBoardState(c)
-	go watchPorts(c)
+	client := &WSClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client.hub.register <- client
 
-	for {
-		// _, _, err := c.ReadMessage()
-		// if err != nil {
-		// 	log.Print("read:", err)
-		// 	break
-		// }
-		time.Sleep(1 * time.Second)
-	}
+	go client.Write()
+	go client.Read()
 }
 
 func sendBoardState(c *websocket.Conn) {
@@ -87,23 +66,5 @@ func sendBoardState(c *websocket.Conn) {
 	err = c.WriteMessage(websocket.TextMessage, json)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func watchPorts(c *websocket.Conn) {
-	go portServer.WatchPorts()
-
-	for ports := range portServer.AvaiblePorts {
-		json, err := json.Marshal(createPortsResponse(ports))
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		err = c.WriteMessage(websocket.TextMessage, json)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
 	}
 }
