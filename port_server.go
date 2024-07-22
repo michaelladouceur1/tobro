@@ -81,8 +81,6 @@ func (ps *PortServer) WatchPorts() {
 		// 	continue
 		// }
 
-		log.Print("Watching ports")
-
 		time.Sleep(1 * time.Second)
 	}
 }

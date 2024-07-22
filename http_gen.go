@@ -4,7 +4,10 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // Defines values for SetupPinRequestMode.
@@ -89,125 +92,227 @@ type PostSetupPinJSONRequestBody = SetupPinRequest
 type ServerInterface interface {
 
 	// (POST /analog_write_pin)
-	PostAnalogWritePin(c *gin.Context)
+	PostAnalogWritePin(w http.ResponseWriter, r *http.Request)
 
 	// (POST /connect)
-	PostConnect(c *gin.Context)
+	PostConnect(w http.ResponseWriter, r *http.Request)
 
 	// (POST /digital_write_pin)
-	PostDigitalWritePin(c *gin.Context)
+	PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 
 	// (GET /ping)
-	GetPing(c *gin.Context)
+	GetPing(w http.ResponseWriter, r *http.Request)
 
 	// (POST /setup_pin)
-	PostSetupPin(c *gin.Context)
+	PostSetupPin(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
 	HandlerMiddlewares []MiddlewareFunc
-	ErrorHandler       func(*gin.Context, error, int)
+	ErrorHandlerFunc   func(w http.ResponseWriter, r *http.Request, err error)
 }
 
-type MiddlewareFunc func(c *gin.Context)
+type MiddlewareFunc func(http.Handler) http.Handler
 
 // PostAnalogWritePin operation middleware
-func (siw *ServerInterfaceWrapper) PostAnalogWritePin(c *gin.Context) {
+func (siw *ServerInterfaceWrapper) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostAnalogWritePin(w, r)
+	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
+		handler = middleware(handler)
 	}
 
-	siw.Handler.PostAnalogWritePin(c)
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // PostConnect operation middleware
-func (siw *ServerInterfaceWrapper) PostConnect(c *gin.Context) {
+func (siw *ServerInterfaceWrapper) PostConnect(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostConnect(w, r)
+	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
+		handler = middleware(handler)
 	}
 
-	siw.Handler.PostConnect(c)
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // PostDigitalWritePin operation middleware
-func (siw *ServerInterfaceWrapper) PostDigitalWritePin(c *gin.Context) {
+func (siw *ServerInterfaceWrapper) PostDigitalWritePin(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostDigitalWritePin(w, r)
+	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
+		handler = middleware(handler)
 	}
 
-	siw.Handler.PostDigitalWritePin(c)
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetPing operation middleware
-func (siw *ServerInterfaceWrapper) GetPing(c *gin.Context) {
+func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPing(w, r)
+	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
+		handler = middleware(handler)
 	}
 
-	siw.Handler.GetPing(c)
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // PostSetupPin operation middleware
-func (siw *ServerInterfaceWrapper) PostSetupPin(c *gin.Context) {
+func (siw *ServerInterfaceWrapper) PostSetupPin(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostSetupPin(w, r)
+	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
+		handler = middleware(handler)
 	}
 
-	siw.Handler.PostSetupPin(c)
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GinServerOptions provides options for the Gin server.
-type GinServerOptions struct {
-	BaseURL      string
-	Middlewares  []MiddlewareFunc
-	ErrorHandler func(*gin.Context, error, int)
+type UnescapedCookieParamError struct {
+	ParamName string
+	Err       error
 }
 
-// RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
-func RegisterHandlers(router gin.IRouter, si ServerInterface) {
-	RegisterHandlersWithOptions(router, si, GinServerOptions{})
+func (e *UnescapedCookieParamError) Error() string {
+	return fmt.Sprintf("error unescaping cookie parameter '%s'", e.ParamName)
 }
 
-// RegisterHandlersWithOptions creates http.Handler with additional options
-func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options GinServerOptions) {
-	errorHandler := options.ErrorHandler
-	if errorHandler == nil {
-		errorHandler = func(c *gin.Context, err error, statusCode int) {
-			c.JSON(statusCode, gin.H{"msg": err.Error()})
+func (e *UnescapedCookieParamError) Unwrap() error {
+	return e.Err
+}
+
+type UnmarshalingParamError struct {
+	ParamName string
+	Err       error
+}
+
+func (e *UnmarshalingParamError) Error() string {
+	return fmt.Sprintf("Error unmarshaling parameter %s as JSON: %s", e.ParamName, e.Err.Error())
+}
+
+func (e *UnmarshalingParamError) Unwrap() error {
+	return e.Err
+}
+
+type RequiredParamError struct {
+	ParamName string
+}
+
+func (e *RequiredParamError) Error() string {
+	return fmt.Sprintf("Query argument %s is required, but not found", e.ParamName)
+}
+
+type RequiredHeaderError struct {
+	ParamName string
+	Err       error
+}
+
+func (e *RequiredHeaderError) Error() string {
+	return fmt.Sprintf("Header parameter %s is required, but not found", e.ParamName)
+}
+
+func (e *RequiredHeaderError) Unwrap() error {
+	return e.Err
+}
+
+type InvalidParamFormatError struct {
+	ParamName string
+	Err       error
+}
+
+func (e *InvalidParamFormatError) Error() string {
+	return fmt.Sprintf("Invalid format for parameter %s: %s", e.ParamName, e.Err.Error())
+}
+
+func (e *InvalidParamFormatError) Unwrap() error {
+	return e.Err
+}
+
+type TooManyValuesForParamError struct {
+	ParamName string
+	Count     int
+}
+
+func (e *TooManyValuesForParamError) Error() string {
+	return fmt.Sprintf("Expected one value for %s, got %d", e.ParamName, e.Count)
+}
+
+// Handler creates http.Handler with routing matching OpenAPI spec.
+func Handler(si ServerInterface) http.Handler {
+	return HandlerWithOptions(si, GorillaServerOptions{})
+}
+
+type GorillaServerOptions struct {
+	BaseURL          string
+	BaseRouter       *mux.Router
+	Middlewares      []MiddlewareFunc
+	ErrorHandlerFunc func(w http.ResponseWriter, r *http.Request, err error)
+}
+
+// HandlerFromMux creates http.Handler with routing matching OpenAPI spec based on the provided mux.
+func HandlerFromMux(si ServerInterface, r *mux.Router) http.Handler {
+	return HandlerWithOptions(si, GorillaServerOptions{
+		BaseRouter: r,
+	})
+}
+
+func HandlerFromMuxWithBaseURL(si ServerInterface, r *mux.Router, baseURL string) http.Handler {
+	return HandlerWithOptions(si, GorillaServerOptions{
+		BaseURL:    baseURL,
+		BaseRouter: r,
+	})
+}
+
+// HandlerWithOptions creates http.Handler with additional options
+func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.Handler {
+	r := options.BaseRouter
+
+	if r == nil {
+		r = mux.NewRouter()
+	}
+	if options.ErrorHandlerFunc == nil {
+		options.ErrorHandlerFunc = func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 	}
-
 	wrapper := ServerInterfaceWrapper{
 		Handler:            si,
 		HandlerMiddlewares: options.Middlewares,
-		ErrorHandler:       errorHandler,
+		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	router.POST(options.BaseURL+"/analog_write_pin", wrapper.PostAnalogWritePin)
-	router.POST(options.BaseURL+"/connect", wrapper.PostConnect)
-	router.POST(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin)
-	router.GET(options.BaseURL+"/ping", wrapper.GetPing)
-	router.POST(options.BaseURL+"/setup_pin", wrapper.PostSetupPin)
+	r.HandleFunc(options.BaseURL+"/analog_write_pin", wrapper.PostAnalogWritePin).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/connect", wrapper.PostConnect).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/ping", wrapper.GetPing).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/setup_pin", wrapper.PostSetupPin).Methods("POST")
+
+	return r
 }

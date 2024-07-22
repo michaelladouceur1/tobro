@@ -56,6 +56,7 @@ function App() {
               <li key={port}>{port}</li>
               <button
                 onClick={() => {
+                  console.log("Connecting to port: ", port);
                   api.connectPost({connectRequest: {port}});
                 }}
               >

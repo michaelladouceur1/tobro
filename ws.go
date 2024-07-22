@@ -2,14 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"log"
-	"mime"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -61,39 +56,6 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 
 var upgrader = websocket.Upgrader{}
 
-func staticHandler(w http.ResponseWriter, r *http.Request) {
-	path := filepath.Clean(r.URL.Path)
-	if path == "/" {
-		path = "/index.html"
-	}
-	path = strings.TrimPrefix(path, "/")
-
-	file, err := uiFS.Open(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			log.Println("file", path, "not found:", err)
-			http.NotFound(w, r)
-			return
-		}
-		log.Println("file", path, "cannot be read:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	contentType := mime.TypeByExtension(filepath.Ext(path))
-	w.Header().Set("Content-Type", contentType)
-	if strings.HasPrefix(path, "static/") {
-		w.Header().Set("Cache-Control", "public, max-age=31536000")
-	}
-	stat, err := file.Stat()
-	if err == nil && stat.Size() > 0 {
-		w.Header().Set("Content-Length", fmt.Sprintf("%d", stat.Size()))
-	}
-
-	n, _ := io.Copy(w, file)
-	log.Println("file", path, "copied", n, "bytes")
-}
-
 func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -106,11 +68,12 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	go watchPorts(c)
 
 	for {
-		_, _, err := c.ReadMessage()
-		if err != nil {
-			log.Print("read:", err)
-			break
-		}
+		// _, _, err := c.ReadMessage()
+		// if err != nil {
+		// 	log.Print("read:", err)
+		// 	break
+		// }
+		time.Sleep(1 * time.Second)
 	}
 }
 

@@ -1,10 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type HTTPServer struct{}
@@ -13,127 +12,110 @@ func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{}
 }
 
-func enableCORS(e *gin.Engine) {
-	e.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		c.Next()
+		next.ServeHTTP(w, r)
 	})
-
 }
 
-// (GET /ping)
-func (s *HTTPServer) GetPing(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
 }
 
-// (POST /connect)
-func (s *HTTPServer) PostConnect(c *gin.Context) {
+func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
+	log.Print("PostConnect")
 	var req ConnectRequest
-	log.Print("PostConnect", req.Port)
-	if err := c.ShouldBindJSON(&req); err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	log.Print("PostConnect", req.Port)
+
 	err := portServer.OpenPort(req.Port)
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	portServer.ListenToPort()
 
-	c.JSON(http.StatusOK, ConnectResponse{Port: &req.Port})
+	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
 
-// (POST /setup_pin)
-func (s *HTTPServer) PostSetupPin(c *gin.Context) {
+func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 	var req SetupPinRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	pin, err := board.GetPin(req.Pin)
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = pin.SetMode(req.Mode)
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	modeStr := string(req.Mode)
-	c.JSON(http.StatusOK, SetupPinResponse{Mode: &modeStr, Pin: &req.Pin})
+	json.NewEncoder(w).Encode(SetupPinResponse{Mode: &modeStr, Pin: &req.Pin})
 }
 
-// (POST /digital_write_pin)
-func (s *HTTPServer) PostDigitalWritePin(c *gin.Context) {
+func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request) {
 	var req DigitalWritePinRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	pin, err := board.GetDigitalWritePin(req.Pin)
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = pin.SetDigitalState(req.Value)
-
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, DigitalWritePinResponse{Pin: &req.Pin, Value: &req.Value})
+	json.NewEncoder(w).Encode(DigitalWritePinResponse{Pin: &req.Pin, Value: &req.Value})
 }
 
-// (POST /analog_write_pin)
-func (s *HTTPServer) PostAnalogWritePin(c *gin.Context) {
+func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) {
 	var req AnalogWritePinRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	pin, err := board.GetAnalogWritePin(req.Pin)
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = pin.SetAnalogState(req.Value)
-
 	if err != nil {
-		err := err.Error()
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: &err})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, AnalogWritePinResponse{Pin: &req.Pin, Value: &req.Value})
+	json.NewEncoder(w).Encode(AnalogWritePinResponse{Pin: &req.Pin, Value: &req.Value})
 }

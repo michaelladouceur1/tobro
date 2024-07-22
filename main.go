@@ -3,13 +3,9 @@ package main
 import (
 	"embed"
 	"io/fs"
-	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 )
 
 //go:embed web/build
@@ -36,37 +32,18 @@ func main() {
 
 	board = NewBoard(ArduinoNano, portServer)
 
-	r := gin.Default()
+	route := mux.NewRouter()
 
-	enableCORS(r)
+	route.Use(enableCORS)
 
-	RegisterHandlers(r, httpServer)
+	h := HandlerFromMux(httpServer, route)
+	route.HandleFunc("/ws", websocketHandler)
+	route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
 
 	s := &http.Server{
-		Handler: r,
-		Addr:    ":8081",
+		Handler: h,
+		Addr:    ":8080",
 	}
 
-	go func() {
-		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
-	log.Print("HTTP server started")
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", staticHandler)
-	mux.HandleFunc("/ws", websocketHandler)
-
-	go func() {
-		if err := http.ListenAndServe(":8080", mux); err != nil {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
-	log.Print("Websocket server started")
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Print("Shutting down servers...")
+	s.ListenAndServe()
 }

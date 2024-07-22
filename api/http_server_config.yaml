@@ -1,6 +1,6 @@
 # yaml-language-server: ...
 package: main
 generate:
-  gin-server: true
+  gorilla-server: true
   models: true
 output: http_gen.go
