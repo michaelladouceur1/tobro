@@ -25,8 +25,7 @@ func createBoardResponse(board Board) BaseResponse[Board] {
 	return BaseResponse[Board]{
 		Type: "board",
 		Data: Board{
-			DigitalPins: board.DigitalPins,
-			AnalogPins:  board.AnalogPins,
+			Pins: board.Pins,
 		},
 	}
 }
@@ -59,8 +58,7 @@ func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 }
 
 func sendBoardState(c *WSClient) {
-	boardState := board.GetState()
-	json, err := json.Marshal(createBoardResponse(boardState))
+	json, err := json.Marshal(createBoardResponse(*board))
 	if err != nil {
 		log.Fatal(err)
 	}
