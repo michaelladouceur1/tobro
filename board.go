@@ -2,7 +2,8 @@ package main
 
 // arduino nano pinout
 // digital pins: 2-13
-// analog pins: A0-A7
+// analog/digital pins: A0-A5
+// analog pins: A6, A7
 // pwm pins: 3, 5, 6, 9, 10, 11
 
 type SupportedBoards string
