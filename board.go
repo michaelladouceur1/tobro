@@ -80,6 +80,7 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 	}
 }
 
+
 func (b *Board) PinCount() int {
 	return len(b.Pins)
 }

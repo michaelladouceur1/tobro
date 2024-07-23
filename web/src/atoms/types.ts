@@ -1,23 +1,19 @@
 export interface Pin {
-    id: number;
-    pinType: string;
-    mode: string;
-    state: number;
-    min: number;
-    max: number;
+  id: number;
+  type: string;
+  mode: string;
+  min: number;
+  max: number;
+  digitalRead: boolean;
+  digitalWrite: boolean;
+  analogRead: boolean;
+  analogWrite: boolean;
 }
-
-export interface DigitalPin extends Pin {
-    pwm: boolean;
-}
-
-export interface AnalogPin extends Pin {}
 
 export interface Board {
-    digitalPins: DigitalPin[];
-    analogPins: AnalogPin[];
+  pins: Pin[];
 }
 
 export interface Ports {
-    ports: string[];
+  ports: string[];
 }

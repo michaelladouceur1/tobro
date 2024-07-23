@@ -17,14 +17,18 @@ type BaseResponse[T any] struct {
 	Data T      `json:"data"`
 }
 
+type BoardResponseData struct {
+	Pins []Pin `json:"pins"`
+}
+
 type PortsResponseData struct {
 	Ports []string `json:"ports"`
 }
 
-func createBoardResponse(board Board) BaseResponse[Board] {
-	return BaseResponse[Board]{
+func createBoardResponse(board Board) BaseResponse[BoardResponseData] {
+	return BaseResponse[BoardResponseData]{
 		Type: "board",
-		Data: Board{
+		Data: BoardResponseData{
 			Pins: board.Pins,
 		},
 	}

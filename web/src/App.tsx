@@ -1,11 +1,11 @@
-import {Button, TextField, AppBar} from "@mui/material";
-import {useAtom} from "jotai";
-import {useEffect, useState} from "react";
-import {portsAtom} from "./atoms/portsAtom";
-import {useHttpApi} from "./hooks/useHttpApi";
+import { Button, TextField, AppBar } from "@mui/material";
+import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { portsAtom } from "./atoms/portsAtom";
+import { useHttpApi } from "./hooks/useHttpApi";
 
 import "./App.css";
-import {boardAtom} from "./atoms/boardAtom";
+import { boardAtom } from "./atoms/boardAtom";
 
 function App() {
   const api = useHttpApi();
@@ -28,20 +28,16 @@ function App() {
 
       if (message.type === "board") {
         console.log("MESSAGE: ", message);
-        const {board} = message.data;
-        setBoard(board);
+        const { pins } = message.data;
+        setBoard({ pins });
       }
 
       if (message.type === "ports") {
-        const {ports} = message.data;
-        setPorts({ports});
+        const { ports } = message.data;
+        setPorts({ ports });
       }
     };
   }, []);
-
-  useEffect(() => {
-    console.log("Board: ", board);
-  }, [board]);
 
   return (
     <div>
@@ -57,7 +53,7 @@ function App() {
               <button
                 onClick={() => {
                   console.log("Connecting to port: ", port);
-                  api.connectPost({connectRequest: {port}});
+                  api.connectPost({ connectRequest: { port } });
                 }}
               >
                 Connect
@@ -92,7 +88,7 @@ function App() {
             if (port === null) {
               return;
             }
-            api.setupPinPost({setupPinRequest: {pin: port, mode: "output"}});
+            api.setupPinPost({ setupPinRequest: { pin: port, mode: "output" } });
           }}
         >
           Setup
@@ -104,7 +100,7 @@ function App() {
               return;
             }
             api.digitalWritePinPost({
-              digitalWritePinRequest: {pin: port, value: 1},
+              digitalWritePinRequest: { pin: port, value: 1 },
             });
           }}
         >
@@ -117,7 +113,7 @@ function App() {
               return;
             }
             api.digitalWritePinPost({
-              digitalWritePinRequest: {pin: port, value: 0},
+              digitalWritePinRequest: { pin: port, value: 0 },
             });
           }}
         >
@@ -130,7 +126,7 @@ function App() {
               return;
             }
             const res = await api.analogWritePinPost({
-              analogWritePinRequest: {pin: port, value: analogValue},
+              analogWritePinRequest: { pin: port, value: analogValue },
             });
             console.log(res);
           }}
