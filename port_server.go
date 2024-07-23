@@ -213,8 +213,8 @@ func (ps *PortServer) Write(data []byte) error {
 
 	commandWithNewline := append(data, '\n')
 
-	bits := len(commandWithNewline) * 8
-	log.Printf("Bits: %d", bits)
+	// bits := len(commandWithNewline) * 8
+	// log.Printf("Bits: %d", bits)
 
 	_, err := ps.Port.Write([]byte(commandWithNewline))
 	if err != nil {

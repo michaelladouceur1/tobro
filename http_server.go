@@ -54,6 +54,7 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
+	log.Print("PostSetupPin")
 	var req SetupPinRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -77,6 +78,7 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request) {
+	log.Print("PostDigitalWritePin")
 	var req DigitalWritePinRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -99,6 +101,7 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) {
+	log.Print("PostAnalogWritePin")
 	var req AnalogWritePinRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
