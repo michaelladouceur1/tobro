@@ -27,7 +27,7 @@ function App() {
       const message = JSON.parse(event.data);
 
       if (message.type === "board") {
-        console.log("MESSAGE: ", message);
+        console.log("board: ", message);
         const { pins } = message.data;
         setBoard({ pins });
       }

@@ -43,7 +43,15 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 	}
 }
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		allowedOrigins := map[string]bool{
+			"http://localhost:8000": true,
+		}
+		origin := r.Header.Get("Origin")
+		return allowedOrigins[origin]
+	},
+}
 
 func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)

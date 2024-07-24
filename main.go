@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -46,7 +47,12 @@ func main() {
 	route.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
+
+	if os.Getenv("GO_ENV") == "dev" {
+		route.PathPrefix("/").Handler(http.FileServer(http.Dir("web/build")))
+	} else {
+		route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
+	}
 
 	s := &http.Server{
 		Handler: h,
