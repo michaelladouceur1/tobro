@@ -47,6 +47,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		allowedOrigins := map[string]bool{
 			"http://localhost:8000": true,
+			"http://localhost:8080": true,
 		}
 		origin := r.Header.Get("Origin")
 		return allowedOrigins[origin]
@@ -70,6 +71,7 @@ func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 }
 
 func sendBoardState(c *WSClient) {
+	log.Print("Sending board state to client")
 	json, err := json.Marshal(createBoardResponse(*board))
 	if err != nil {
 		log.Fatal(err)
