@@ -7,6 +7,7 @@ import { useHttpApi } from "./hooks/useHttpApi";
 import "./App.css";
 import { boardAtom } from "./atoms/boardAtom";
 import { useWsApi } from "./hooks/useWsApi";
+import { PinList } from "./components/PinList";
 
 function App() {
   const api = useHttpApi();
@@ -41,7 +42,8 @@ function App() {
           ))}
         </ul>
       </div>
-      <div>
+      <PinList />
+      {/* <div>
         <h2>Digital Write Pin</h2>
         <TextField
           label="Port"
@@ -112,7 +114,7 @@ function App() {
         >
           Analog
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -48,11 +48,9 @@ func main() {
 		serveWs(hub, w, r)
 	})
 
-	if os.Getenv("GO_ENV") == "dev" {
-		route.PathPrefix("/").Handler(http.FileServer(http.Dir("web/build")))
-	} else {
+	if os.Getenv("GO_ENV") != "dev" {
 		route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
-	}
+	} 
 
 	s := &http.Server{
 		Handler: h,
