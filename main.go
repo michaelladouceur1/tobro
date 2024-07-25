@@ -34,10 +34,12 @@ func main() {
 	hub := NewWSHub()
 	go hub.Run()
 
-	monitor := NewMonitor(hub, portServer)
+	board = NewBoard(ArduinoNano, portServer)
+
+
+	monitor := NewMonitor(hub, portServer, board)
 	go monitor.Run()
 
-	board = NewBoard(ArduinoNano, portServer)
 
 	route := mux.NewRouter()
 
