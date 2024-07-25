@@ -21,11 +21,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "dev": "node esbuild.config.js",
+    "dev": "npm copy:index && node esbuild.config.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "copy:index": "cp ./assets/index.html ./build/index.html"
   },
   "eslintConfig": {
     "extends": [
