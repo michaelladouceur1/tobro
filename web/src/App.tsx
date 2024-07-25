@@ -1,43 +1,23 @@
 import { Button, TextField, AppBar } from "@mui/material";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { portsAtom } from "./atoms/portsAtom";
 import { useHttpApi } from "./hooks/useHttpApi";
 
 import "./App.css";
 import { boardAtom } from "./atoms/boardAtom";
+import { useWsApi } from "./hooks/useWsApi";
+import { PinList } from "./components/PinList";
 
 function App() {
   const api = useHttpApi();
+  const wsApi = useWsApi();
 
   const [port, setPort] = useState<number | null>(null);
   const [analogValue, setAnalogValue] = useState(50);
 
   const [board, setBoard] = useAtom(boardAtom);
   const [ports, setPorts] = useAtom(portsAtom);
-
-  useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080/ws");
-
-    ws.onopen = () => {
-      console.log("Connected to server");
-    };
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-
-      if (message.type === "board") {
-        console.log("MESSAGE: ", message);
-        const { pins } = message.data;
-        setBoard({ pins });
-      }
-
-      if (message.type === "ports") {
-        const { ports } = message.data;
-        setPorts({ ports });
-      }
-    };
-  }, []);
 
   return (
     <div>
@@ -62,7 +42,8 @@ function App() {
           ))}
         </ul>
       </div>
-      <div>
+      <PinList />
+      {/* <div>
         <h2>Digital Write Pin</h2>
         <TextField
           label="Port"
@@ -133,7 +114,7 @@ function App() {
         >
           Analog
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }

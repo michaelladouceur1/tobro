@@ -13,6 +13,7 @@
     "@types/node": "^16.18.101",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "esbuild": "^0.23.0",
     "jotai": "^2.9.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -21,6 +22,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "dev": "esbuild --bundle src/index.tsx --outdir=build --servedir=build --watch",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

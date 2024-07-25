@@ -99,6 +99,15 @@ func (b *Board) GetPin(id int) (*Pin, error) {
 	return nil, &PinNotFoundError{}
 }
 
+func (b *Board) GetPins() []*Pin {
+	var pins []*Pin
+	for _, p := range b.Pins {
+		pins = append(pins, &p)
+	}
+
+	return pins
+}
+
 func (b *Board) GetDigitalWritePin(id int) (DigitalWritePin, error) {
 	for _, p := range b.Pins {
 		if p.ID == id {

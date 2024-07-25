@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -33,10 +34,12 @@ func main() {
 	hub := NewWSHub()
 	go hub.Run()
 
-	monitor := NewMonitor(hub, portServer)
+	board = NewBoard(ArduinoNano, portServer)
+
+
+	monitor := NewMonitor(hub, portServer, board)
 	go monitor.Run()
 
-	board = NewBoard(ArduinoNano, portServer)
 
 	route := mux.NewRouter()
 
@@ -46,7 +49,10 @@ func main() {
 	route.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
+
+	if os.Getenv("GO_ENV") != "dev" {
+		route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
+	} 
 
 	s := &http.Server{
 		Handler: h,
