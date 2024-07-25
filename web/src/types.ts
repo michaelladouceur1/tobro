@@ -21,17 +21,12 @@ export interface Pin {
   state: number;
 }
 
-export interface PinState {
-  id: number;
-  state: number;
-}
-
 export interface Board {
   pins: Pin[];
 }
 
 export interface BoardState {
-    [key: number]: number;
+  [key: number]: number;
 }
 
 export interface Ports {

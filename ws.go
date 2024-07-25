@@ -25,6 +25,11 @@ type PortsResponseData struct {
 	Ports []string `json:"ports"`
 }
 
+type PinModeResponseData struct {
+	ID   int `json:"id"`
+	Mode int `json:"mode"`
+}
+
 type PinStateResponseData struct {
 	ID    int `json:"id"`
 	State int `json:"state"`
@@ -44,6 +49,16 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 		Type: "ports",
 		Data: PortsResponseData{
 			Ports: ports,
+		},
+	}
+}
+
+func createPinModeResponse(id int, mode int) BaseResponse[PinModeResponseData] {
+	return BaseResponse[PinModeResponseData]{
+		Type: "pin_mode",
+		Data: PinModeResponseData{
+			ID:   id,
+			Mode: mode,
 		},
 	}
 }

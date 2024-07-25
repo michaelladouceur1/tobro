@@ -23,13 +23,13 @@ type Pin struct {
 	PortServer   *PortServer
 	ID           int
 	PinType      PinType
-	Mode         PinMode
 	Min          int
 	Max          int
 	DigitalRead  bool
 	DigitalWrite bool
 	AnalogRead   bool
 	AnalogWrite  bool
+	Mode         chan int
 	State        chan int
 }
 
@@ -63,13 +63,13 @@ func NewPin(ps *PortServer, id int, config PinConfig) *Pin {
 		PortServer:   ps,
 		ID:           id,
 		PinType:      config.PinType,
-		Mode:         PinInput,
 		Min:          min,
 		Max:          max,
 		DigitalRead:  config.DigitalRead,
 		DigitalWrite: config.DigitalWrite,
 		AnalogRead:   config.AnalogRead,
 		AnalogWrite:  config.AnalogWrite,
+		Mode:         make(chan int),
 		State:        make(chan int),
 	}
 }
@@ -78,7 +78,6 @@ func (p *Pin) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"id":           p.ID,
 		"type":         p.PinType,
-		"mode":         p.Mode,
 		"min":          p.Min,
 		"max":          p.Max,
 		"digitalRead":  p.DigitalRead,
@@ -104,7 +103,7 @@ func (p *Pin) SetMode(mode SetupPinRequestMode) error {
 		return err
 	}
 
-	p.Mode = pinMode
+	p.Mode <- int(pinMode)
 
 	return nil
 }

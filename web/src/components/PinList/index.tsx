@@ -2,11 +2,11 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 // import ListItemAvatar from "@mui/material/ListItemAvatar";
-import {Button, Divider, Switch} from "@mui/material";
-import {useAtomValue} from "jotai";
-import {boardAtom} from "../../atoms/boardAtom";
-import {useHttpApi} from "../../hooks/useHttpApi";
-import {DigitalState, PinMode} from "../../types";
+import { Button, Divider, Switch } from "@mui/material";
+import { useAtomValue } from "jotai";
+import { boardAtom } from "../../atoms/boardAtom";
+import { useHttpApi } from "../../hooks/useHttpApi";
+import { DigitalState, PinMode } from "../../types";
 
 export function PinList() {
   const api = useHttpApi();
@@ -14,13 +14,13 @@ export function PinList() {
 
   const handleSetupPin = async (id: number) => {
     await api.setupPinPost({
-      setupPinRequest: {pin: id, mode: PinMode.Output},
+      setupPinRequest: { pin: id, mode: PinMode.Output },
     });
   };
 
   const handleDigitalWrite = async (id: number, value: number) => {
     await api.digitalWritePinPost({
-      digitalWritePinRequest: {pin: id, value},
+      digitalWritePinRequest: { pin: id, value },
     });
   };
 
@@ -32,7 +32,7 @@ export function PinList() {
           <>
             <ListItem key={pin.id}>
               <ListItemText primary={pin.id} secondary={pin.type} />
-              <Button
+              {/* <Button
                 variant="contained"
                 onClick={async () => {
                   const {id} = pin;
@@ -42,17 +42,22 @@ export function PinList() {
                 }}
               >
                 Setup
-              </Button>
+              </Button> */}
+              <Switch
+                checked={pin.mode === PinMode.Output}
+                onChange={async () => {
+                  const { id } = pin;
+                  const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
+                  await api.setupPinPost({ setupPinRequest: { pin: id, mode } });
+                }}
+              />
               <Switch
                 checked={pin.state === pin.max}
                 onChange={async () => {
-                  const {id} = pin;
-                  const value =
-                    pin.state === pin.max
-                      ? DigitalState.Low
-                      : DigitalState.High;
+                  const { id } = pin;
+                  const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
                   await api.digitalWritePinPost({
-                    digitalWritePinRequest: {pin: id, value},
+                    digitalWritePinRequest: { pin: id, value },
                   });
                 }}
               />

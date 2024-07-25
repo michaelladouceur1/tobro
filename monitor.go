@@ -48,21 +48,38 @@ func (m *Monitor) watchPinState() {
 
 		for _, pin := range m.board.Pins {
 			go func(pin Pin) {
-				state, ok := <-pin.State
-				if !ok {
-					log.Printf("Pin %d state channel is closed", pin.ID)
-					return
+				select {
+				case state, ok := <-pin.State:
+					if !ok {
+						log.Printf("Pin %d state channel is closed", pin.ID)
+						return
+					}
+
+					json, err := json.Marshal(createPinStateResponse(pin.ID, state))
+					if err != nil {
+						log.Fatal(err)
+						return
+					}
+
+					log.Print("Pin state: ", string(json))
+
+					m.hub.broadcast <- json
+				case mode, ok := <-pin.Mode:
+					if !ok {
+						log.Printf("Pin %d mode channel is closed", pin.ID)
+						return
+					}
+
+					json, err := json.Marshal(createPinModeResponse(pin.ID, mode))
+					if err != nil {
+						log.Fatal(err)
+						return
+					}
+
+					log.Print("Pin mode: ", string(json))
+
+					m.hub.broadcast <- json
 				}
-
-				json, err := json.Marshal(createPinStateResponse(pin.ID, state))
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-
-				log.Print("Pin state: ", string(json))
-
-				m.hub.broadcast <- json
 			}(pin)
 		}
 
