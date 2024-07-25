@@ -1,13 +1,13 @@
-import { Button, TextField, AppBar } from "@mui/material";
-import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
-import { portsAtom } from "./atoms/portsAtom";
-import { useHttpApi } from "./hooks/useHttpApi";
+import {Button, TextField, AppBar} from "@mui/material";
+import {useAtom, useAtomValue} from "jotai";
+import {useEffect, useState} from "react";
+import {portsAtom} from "./atoms/portsAtom";
+import {useHttpApi} from "./hooks/useHttpApi";
 
 import "./App.css";
-import { boardAtom } from "./atoms/boardAtom";
-import { useWsApi } from "./hooks/useWsApi";
-import { PinList } from "./components/PinList";
+import {boardAtom} from "./atoms/boardAtom";
+import {useWsApi} from "./hooks/useWsApi";
+import {PinList} from "./components/PinList";
 
 function App() {
   const api = useHttpApi();
@@ -33,7 +33,7 @@ function App() {
               <button
                 onClick={() => {
                   console.log("Connecting to port: ", port);
-                  api.connectPost({ connectRequest: { port } });
+                  api.connectPost({connectRequest: {port}});
                 }}
               >
                 Connect
