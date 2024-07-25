@@ -19,6 +19,10 @@ function App() {
   const [board, setBoard] = useAtom(boardAtom);
   const [ports, setPorts] = useAtom(portsAtom);
 
+  useEffect(() => {
+    console.log("board: ", board);
+  }, [board]);
+
   return (
     <div>
       <AppBar position="static" color="primary">

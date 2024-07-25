@@ -7,15 +7,15 @@ import (
 )
 
 type Monitor struct {
-	hub *WSHub
-	ps  *PortServer
+	hub   *WSHub
+	ps    *PortServer
 	board *Board
 }
 
 func NewMonitor(hub *WSHub, ps *PortServer, board *Board) *Monitor {
 	return &Monitor{
-		hub: hub,
-		ps:  ps,
+		hub:   hub,
+		ps:    ps,
 		board: board,
 	}
 }
@@ -48,18 +48,24 @@ func (m *Monitor) watchPinState() {
 
 		for _, pin := range m.board.Pins {
 			go func(pin Pin) {
-				if pin.State == nil {
-					log.Printf("Pin %d state is nil", pin.ID)
-				}
-	
 				state, ok := <-pin.State
 				if !ok {
 					log.Printf("Pin %d state channel is closed", pin.ID)
+					return
 				}
-				log.Printf("Pin %d state: %d", pin.ID, state)
+
+				json, err := json.Marshal(createPinStateResponse(pin.ID, state))
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+
+				log.Print("Pin state: ", string(json))
+
+				m.hub.broadcast <- json
 			}(pin)
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 }

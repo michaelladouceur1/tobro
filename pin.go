@@ -12,37 +12,33 @@ const (
 	PinInput  PinMode = 0
 	PinOutput PinMode = 1
 
-	DigitalPinLow = 0
- 	DigitalPinHigh = 1
+	DigitalPinLow  = 0
+	DigitalPinHigh = 1
 
 	AnalogPinMin = 0
 	AnalogPinMax = 255
 )
 
-
-
-
-
 type Pin struct {
-	PortServer *PortServer
-	ID         int
-	PinType    PinType
-	Mode       PinMode
-	Min        int
-	Max        int
-	DigitalRead bool
+	PortServer   *PortServer
+	ID           int
+	PinType      PinType
+	Mode         PinMode
+	Min          int
+	Max          int
+	DigitalRead  bool
 	DigitalWrite bool
-	AnalogRead bool
-	AnalogWrite bool
-	State      chan int
+	AnalogRead   bool
+	AnalogWrite  bool
+	State        chan int
 }
 
 type PinConfig struct {
-	PinType PinType
-	DigitalRead bool
+	PinType      PinType
+	DigitalRead  bool
 	DigitalWrite bool
-	AnalogRead bool
-	AnalogWrite bool
+	AnalogRead   bool
+	AnalogWrite  bool
 }
 
 type DigitalWritePin interface {
@@ -64,31 +60,31 @@ func NewPin(ps *PortServer, id int, config PinConfig) *Pin {
 	}
 
 	return &Pin{
-		PortServer: ps,
-		ID:         id,
-		PinType:    config.PinType,
-		Mode:       PinInput,
-		Min:        min,
-		Max:        max,
-		DigitalRead: config.DigitalRead,
+		PortServer:   ps,
+		ID:           id,
+		PinType:      config.PinType,
+		Mode:         PinInput,
+		Min:          min,
+		Max:          max,
+		DigitalRead:  config.DigitalRead,
 		DigitalWrite: config.DigitalWrite,
-		AnalogRead: config.AnalogRead,
-		AnalogWrite: config.AnalogWrite,
-		State:      make(chan int),
+		AnalogRead:   config.AnalogRead,
+		AnalogWrite:  config.AnalogWrite,
+		State:        make(chan int),
 	}
 }
 
 func (p *Pin) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"id":   p.ID,
-		"type": p.PinType,
-		"mode": p.Mode,
-		"min":  p.Min,
-		"max":  p.Max,
-		"digitalRead": p.DigitalRead,
+		"id":           p.ID,
+		"type":         p.PinType,
+		"mode":         p.Mode,
+		"min":          p.Min,
+		"max":          p.Max,
+		"digitalRead":  p.DigitalRead,
 		"digitalWrite": p.DigitalWrite,
-		"analogRead": p.AnalogRead,
-		"analogWrite": p.AnalogWrite,
+		"analogRead":   p.AnalogRead,
+		"analogWrite":  p.AnalogWrite,
 	})
 }
 
@@ -147,7 +143,7 @@ func (p *Pin) SetAnalogState(state int) error {
 	if !p.AnalogWrite {
 		return &AnalogWriteNotSupportedError{}
 	}
-	
+
 	if state < p.Min || state > p.Max {
 		return &InvalidAnalogStateError{}
 	}

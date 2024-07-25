@@ -36,10 +36,8 @@ func main() {
 
 	board = NewBoard(ArduinoNano, portServer)
 
-
 	monitor := NewMonitor(hub, portServer, board)
 	go monitor.Run()
-
 
 	route := mux.NewRouter()
 
@@ -52,7 +50,9 @@ func main() {
 
 	if os.Getenv("GO_ENV") != "dev" {
 		route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
-	} 
+	} else {
+		route.PathPrefix("/").Handler(http.FileServer(http.Dir("web/build")))
+	}
 
 	s := &http.Server{
 		Handler: h,
