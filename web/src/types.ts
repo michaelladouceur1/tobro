@@ -3,6 +3,11 @@ export enum PinMode {
   Output = "output",
 }
 
+export enum PinType {
+  Digital = "digital",
+  Analog = "analog",
+}
+
 export enum DigitalState {
   Low = 0,
   High = 1,
