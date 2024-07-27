@@ -1,17 +1,8 @@
-import {
-  AppBar,
-  Box,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Toolbar,
-} from "@mui/material";
-import {useHttpApi} from "../hooks/useHttpApi";
-import {useAtomValue} from "jotai";
-import {portsAtom} from "../atoms/portsAtom";
-import {useState} from "react";
+import { Box, Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Toolbar } from "@mui/material";
+import { useAtomValue } from "jotai";
+import { useState } from "react";
+import { portsAtom } from "../atoms/portsAtom";
+import { useHttpApi } from "../hooks/useHttpApi";
 
 export function Menu() {
   const api = useHttpApi();
@@ -25,23 +16,18 @@ export function Menu() {
       return;
     }
     setError(false);
-    const res = await api.connectPost({connectRequest: {port: e.target.value}});
+    const res = await api.connectPost({ connectRequest: { port: e.target.value } });
     console.log("connect response: ", res);
   };
 
   return (
-    <AppBar position="static" color="primary">
+    <Card variant="outlined" sx={{ gridArea: "menu" }}>
       <Toolbar>
-        <h1>Tobro UI</h1>
+        {/* <h1>Tobro UI</h1> */}
         <Box>
-          <FormControl sx={{width: "200px"}}>
+          <FormControl sx={{ width: "200px" }}>
             <InputLabel id="port-select-label">Port</InputLabel>
-            <Select
-              labelId="port-select-label"
-              label="Port"
-              value={port}
-              onChange={handleConnect}
-            >
+            <Select labelId="port-select-label" label="Port" value={port} onChange={handleConnect}>
               <MenuItem value={undefined}>Select a port</MenuItem>
               {ports.ports.map((port) => (
                 <MenuItem key={port} value={port}>
@@ -52,6 +38,6 @@ export function Menu() {
           </FormControl>
         </Box>
       </Toolbar>
-    </AppBar>
+    </Card>
   );
 }

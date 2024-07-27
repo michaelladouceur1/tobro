@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 
@@ -49,8 +50,10 @@ func main() {
 	})
 
 	if os.Getenv("GO_ENV") != "dev" {
+		log.Print("Serving UI from embed.FS")
 		route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
 	} else {
+		log.Print("Serving UI from web/build")
 		route.PathPrefix("/").Handler(http.FileServer(http.Dir("web/build")))
 	}
 
