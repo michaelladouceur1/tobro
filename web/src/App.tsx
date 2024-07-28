@@ -1,11 +1,12 @@
-import { Menu } from "./components/Menu";
-import { PinList } from "./components/PinList";
-import { useWsApi } from "./hooks/useWsApi";
+import {Menu} from "./components/Menu";
+import {PinList} from "./components/Main/PinList";
+import {useWsApi} from "./hooks/useWsApi";
+import {Main} from "./components/Main/Main";
+import {SideNav} from "./components/SideNav";
+import {Box, styled} from "@mui/material";
+import {Terminal} from "./components/Terminal";
 
 import "./App.css";
-import { SideNav } from "./components/SideNav";
-import { Box, styled } from "@mui/material";
-import { Terminal } from "./components/Terminal";
 
 function App() {
   useWsApi();
@@ -26,18 +27,19 @@ function App() {
     padding: "5px",
   });
 
-  const Main = styled(Box)({
-    display: "grid",
-    gridTemplateColumns: "100px 1fr 500px",
-    gap: "10px",
-    padding: "5px",
-  });
+  // const Main = styled(Box)({
+  //   display: "grid",
+  //   gridTemplateColumns: "100px 1fr 500px",
+  //   gap: "10px",
+  //   padding: "5px",
+  // });
 
   return (
     <App>
       <Menu />
       <SideNav />
-      <PinList />
+      {/* <PinList /> */}
+      <Main />
       <Terminal />
     </App>
   );

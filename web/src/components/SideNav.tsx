@@ -1,7 +1,21 @@
-import { Box, Button, Card, Drawer, IconButton, List, ListItem, ListItemIcon, styled } from "@mui/material";
-import { PiCircuitryLight, PiWaveformLight } from "react-icons/pi";
+import {
+  Box,
+  Button,
+  Card,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  styled,
+} from "@mui/material";
+import {useAtom} from "jotai";
+import {PiCircuitryLight, PiWaveformLight} from "react-icons/pi";
+import {mainViewAtom} from "../atoms/mainViewAtom";
 
 export function SideNav() {
+  const [mainView, setMainView] = useAtom(mainViewAtom);
+
   const SnContainer = styled(Card)({
     gridArea: "sidenav",
     display: "flex",
@@ -27,12 +41,12 @@ export function SideNav() {
     <SnContainer variant="outlined">
       <SnList>
         <SnListItem>
-          <SnButton color="primary">
+          <SnButton color="primary" onClick={() => setMainView("config")}>
             <PiCircuitryLight size="30px" />
           </SnButton>
         </SnListItem>
         <SnListItem>
-          <SnButton color="primary">
+          <SnButton color="primary" onClick={() => setMainView("pin-list")}>
             <PiWaveformLight size="30px" />
           </SnButton>
         </SnListItem>
