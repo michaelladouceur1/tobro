@@ -1,10 +1,9 @@
-import {Menu} from "./components/Menu";
-import {PinList} from "./components/Main/PinList";
-import {useWsApi} from "./hooks/useWsApi";
-import {Main} from "./components/Main/Main";
-import {SideNav} from "./components/SideNav";
 import {Box, styled} from "@mui/material";
+import {Main} from "./components/Main/Main";
+import {Menu} from "./components/Menu";
+import {SideNav} from "./components/SideNav";
 import {Terminal} from "./components/Terminal";
+import {useWsApi} from "./hooks/useWsApi";
 
 import "./App.css";
 
@@ -27,18 +26,10 @@ function App() {
     padding: "5px",
   });
 
-  // const Main = styled(Box)({
-  //   display: "grid",
-  //   gridTemplateColumns: "100px 1fr 500px",
-  //   gap: "10px",
-  //   padding: "5px",
-  // });
-
   return (
     <App>
       <Menu />
       <SideNav />
-      {/* <PinList /> */}
       <Main />
       <Terminal />
     </App>

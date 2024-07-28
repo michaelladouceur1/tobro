@@ -1,4 +1,4 @@
-import {Box, Card} from "@mui/material";
+import {Card} from "@mui/material";
 import {useAtomValue} from "jotai";
 import {mainViewAtom} from "../../atoms/mainViewAtom";
 import {Config} from "./Config";

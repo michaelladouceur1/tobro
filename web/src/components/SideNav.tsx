@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  styled,
-} from "@mui/material";
+import {Card, IconButton, List, ListItem, styled} from "@mui/material";
 import {useAtom} from "jotai";
 import {PiCircuitryLight, PiWaveformLight} from "react-icons/pi";
 import {mainViewAtom} from "../atoms/mainViewAtom";
