@@ -1,4 +1,4 @@
-module tobro-server
+module tobro
 
 go 1.21.7
 
