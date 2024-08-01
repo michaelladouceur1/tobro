@@ -11,28 +11,20 @@ func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{}
 }
 
-func decodeRequestBody(w http.ResponseWriter, r *http.Request, target interface{}) error {
-	if err := json.NewDecoder(r.Body).Decode(target); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return err
-	}
-
-	return nil
-}
-
 func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
 }
 
 func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	var req ConnectRequest
-	if err := decodeRequestBody(w, r, req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err := portServer.OpenPort(req.Port)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -43,7 +35,8 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 	var req SetupPinRequest
-	if err := decodeRequestBody(w, r, req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -65,7 +58,8 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 
 func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request) {
 	var req DigitalWritePinRequest
-	if err := decodeRequestBody(w, r, req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -86,7 +80,8 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 
 func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) {
 	var req AnalogWritePinRequest
-	if err := decodeRequestBody(w, r, req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
