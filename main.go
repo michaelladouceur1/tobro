@@ -43,6 +43,7 @@ func main() {
 	route := mux.NewRouter()
 
 	route.Use(enableCORS)
+	route.Use(logRequest)
 
 	h := HandlerFromMux(httpServer, route)
 	route.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
