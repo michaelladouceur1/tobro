@@ -1,19 +1,30 @@
 import {
+  Avatar,
   Box,
   Card,
+  Divider,
   List,
   ListItem,
+  ListItemAvatar,
+  ListItemText,
   SpeedDial,
   SpeedDialAction,
+  Stack,
   styled,
   Switch,
+  Typography,
 } from "@mui/material";
 import ArduinoNanoSVG from "../../assets/arduino-nano.svg";
 import {useEffect, useRef} from "react";
 import {useAtomValue} from "jotai";
 import {boardAtom} from "../../atoms/boardAtom";
+import {DigitalState, Pin, PinMode, PinType} from "../../types";
+import {PiMagicWand, PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
+import {useHttpApi} from "../../hooks/useHttpApi";
+import {theme} from "../../theme";
 
 export function Config() {
+  const api = useHttpApi();
   const board = useAtomValue(boardAtom);
   //   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -56,16 +67,29 @@ export function Config() {
   //     };
   //   }, []);
 
-  const leftPins = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const handleSetupPin = async (pin: Pin) => {
+    const {id} = pin;
+    const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
+    await api.setupPinPost({setupPinRequest: {pin: id, mode}});
+  };
 
-  const rightPins = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  const handleDigitalWrite = async (pin: Pin) => {
+    const {id} = pin;
+    const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
+    await api.digitalWritePinPost({
+      digitalWritePinRequest: {pin: id, value},
+    });
+  };
 
   const Config = styled(Box)({
     width: "100%",
     height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    display: "grid",
+    gridTemplateColumns: "200px 1fr",
+    gridTemplateRows: "1fr",
+    gridTemplateAreas: `
+      "list svg"
+    `,
   });
 
   const SVG = styled("img")({
@@ -81,18 +105,48 @@ export function Config() {
 
   return (
     <Config>
-      <List sx={{gap: "10px"}}>
-        {leftPins.map((pin) => {
+      <List dense={true}>
+        {board.pins.map((pin) => {
           return (
-            // <ListItem key={pin}>
-            <Card variant="outlined" sx={{width: "200px"}}>
-              {pin}
-            </Card>
-            // </ListItem>
+            <>
+              <ListItem key={pin.id}>
+                <ListItemText primary={pin.id} />
+                <ListItemAvatar>
+                  <Avatar
+                    sx={{
+                      cursor: "pointer",
+                      width: "28px",
+                      height: "28px",
+                      bgcolor:
+                        pin.state === pin.max
+                          ? theme.palette.primary.main
+                          : null,
+                    }}
+                    onClick={() => handleDigitalWrite(pin)}
+                  >
+                    {pin.type === PinType.Digital ? (
+                      <PiWaveSineLight size="20px" />
+                    ) : (
+                      <PiWaveSquareLight size="20px" />
+                    )}
+                  </Avatar>
+                </ListItemAvatar>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <p>I</p>
+                  <Switch
+                    size="small"
+                    checked={pin.mode === PinMode.Output}
+                    onChange={() => handleSetupPin(pin)}
+                  />
+                  <p>O</p>
+                </Stack>
+              </ListItem>
+              <Divider />
+            </>
           );
         })}
       </List>
-      <SVG src={ArduinoNanoSVG} alt="Arduino Nano" />
+      {/* <SVG src={ArduinoNanoSVG} alt="Arduino Nano" /> */}
     </Config>
   );
 }

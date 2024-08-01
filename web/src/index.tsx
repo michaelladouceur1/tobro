@@ -1,38 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import {ThemeProvider} from "@mui/material/styles";
 import App from "./App";
+import {theme} from "./theme";
 
 import "./index.css";
+import {CssBaseline} from "@mui/material";
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#549F93",
-    },
-    secondary: {
-      main: "#28536B",
-    },
-    text: {
-      primary: "#F5E0B7",
-    },
-    error: {
-      main: "#FB6107",
-    },
-    background: {
-      default: "#0C1618",
-    },
-  },
-  components: {
-    MuiCard: {},
-  },
-});
-
-const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
 
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <App />
     </ThemeProvider>
   </React.StrictMode>

@@ -1,4 +1,6 @@
 const esbuild = require("esbuild");
+const svgrPlugin = require("esbuild-plugin-svgr");
+
 async function watch() {
   let ctx = await esbuild.context({
     entryPoints: ["./src/index.tsx"],
@@ -7,7 +9,8 @@ async function watch() {
     format: "cjs",
     sourcemap: true,
     outfile: "./build/output.js",
-    loader: { ".ts": "ts" },
+    plugins: [svgrPlugin()],
+    loader: { ".ts": "ts", ".svg": "file" },
   });
   await ctx.watch();
   console.log('Watching...');
