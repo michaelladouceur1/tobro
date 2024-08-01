@@ -28,6 +28,15 @@ func enableCORS(next http.Handler) http.Handler {
 	})
 }
 
+func decodeRequestBody(w http.ResponseWriter, r *http.Request, target interface{}) error {
+	if err := json.NewDecoder(r.Body).Decode(target); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+
+	return nil
+}
+
 func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
 }
@@ -35,8 +44,7 @@ func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
 func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	log.Print("PostConnect")
 	var req ConnectRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := decodeRequestBody(w, r, req); err != nil {
 		return
 	}
 
@@ -56,8 +64,7 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 	log.Print("PostSetupPin")
 	var req SetupPinRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := decodeRequestBody(w, r, req); err != nil {
 		return
 	}
 
@@ -80,8 +87,7 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request) {
 	log.Print("PostDigitalWritePin")
 	var req DigitalWritePinRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := decodeRequestBody(w, r, req); err != nil {
 		return
 	}
 
@@ -103,8 +109,7 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) {
 	log.Print("PostAnalogWritePin")
 	var req AnalogWritePinRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := decodeRequestBody(w, r, req); err != nil {
 		return
 	}
 
