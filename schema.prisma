@@ -10,6 +10,8 @@ generator client {
 model Circuit {
     id        Int      @id @default(autoincrement())
     name      String
+    board     String
+    pins      Pin[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -19,4 +21,12 @@ model Sketch {
     name      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model Pin {
+    id        Int     @id @default(autoincrement())
+    pin       Int
+    mode      Int     @default(0) // 0 = INPUT, 1 = OUTPUT
+    circuit   Circuit @relation(fields: [circuitId], references: [id])
+    circuitId Int
 }

@@ -39,6 +39,19 @@ type ConnectResponse struct {
 	Timestamp *int    `json:"timestamp,omitempty"`
 }
 
+// CreateCircuitRequest defines model for CreateCircuitRequest.
+type CreateCircuitRequest struct {
+	Board interface{} `json:"board"`
+	Name  string      `json:"name"`
+}
+
+// CreateCircuitResponse defines model for CreateCircuitResponse.
+type CreateCircuitResponse struct {
+	Board     *string `json:"board,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	Timestamp *int    `json:"timestamp,omitempty"`
+}
+
 // DigitalWritePinRequest defines model for DigitalWritePinRequest.
 type DigitalWritePinRequest struct {
 	Pin   int `json:"pin"`
@@ -82,6 +95,9 @@ type PostAnalogWritePinJSONRequestBody = AnalogWritePinRequest
 // PostConnectJSONRequestBody defines body for PostConnect for application/json ContentType.
 type PostConnectJSONRequestBody = ConnectRequest
 
+// PostCreateCircuitJSONRequestBody defines body for PostCreateCircuit for application/json ContentType.
+type PostCreateCircuitJSONRequestBody = CreateCircuitRequest
+
 // PostDigitalWritePinJSONRequestBody defines body for PostDigitalWritePin for application/json ContentType.
 type PostDigitalWritePinJSONRequestBody = DigitalWritePinRequest
 
@@ -96,6 +112,9 @@ type ServerInterface interface {
 
 	// (POST /connect)
 	PostConnect(w http.ResponseWriter, r *http.Request)
+
+	// (POST /create_circuit)
+	PostCreateCircuit(w http.ResponseWriter, r *http.Request)
 
 	// (POST /digital_write_pin)
 	PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
@@ -137,6 +156,21 @@ func (siw *ServerInterfaceWrapper) PostConnect(w http.ResponseWriter, r *http.Re
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostConnect(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostCreateCircuit operation middleware
+func (siw *ServerInterfaceWrapper) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostCreateCircuit(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -307,6 +341,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	r.HandleFunc(options.BaseURL+"/analog_write_pin", wrapper.PostAnalogWritePin).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/connect", wrapper.PostConnect).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/create_circuit", wrapper.PostCreateCircuit).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin).Methods("POST")
 
