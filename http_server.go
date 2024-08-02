@@ -33,6 +33,25 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
 
+func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
+	var req CreateCircuitRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	boardType, ok := req.Board.(SupportedBoards)
+	if !ok {
+		http.Error(w, "invalid board type", http.StatusBadRequest)
+		return
+	}
+
+	board = NewBoard(boardType, portServer)
+
+	boardTypeStr := string(boardType)
+	json.NewEncoder(w).Encode(CreateCircuitResponse{Board: &boardTypeStr})
+}
+
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 	var req SetupPinRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

@@ -33,6 +33,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /create_circuit:
+    post:
+      requestBody:
+        description: Create a circuit
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCircuitRequest'
+      responses:
+        '200':
+          description: Create circuit post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCircuitResponse'
+        '400':
+          description: Create circuit post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /setup_pin:
     post:
       requestBody:
@@ -128,6 +149,31 @@ components:
         port:
           type: string
           example: "/dev/ttyUSB0"
+        timestamp:
+          type: integer
+          example: 1612345678
+    CreateCircuitRequest:
+      type: object
+      required:
+        - name
+        - board
+      properties:
+        name:
+          type: string
+          example: "my_circuit"
+        board:
+          enum:
+            - "arduino_nano"
+          example: "arduino_nano"
+    CreateCircuitResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "my_circuit"
+        board:
+          type: string
+          example: "arduino_nano"
         timestamp:
           type: integer
           example: 1612345678
