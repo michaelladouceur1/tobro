@@ -47,7 +47,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateCircuitResponse'
+                $ref: '#/components/schemas/BoardResponse'
         '400':
           description: Create circuit post error response
           content:
@@ -245,3 +245,38 @@ components:
           type: integer
           minimum: 0
           maximum: 255
+    PinResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          enum:
+            - "analog"
+            - "digital"
+        mode:
+          type: integer
+          minimum: 0
+          maximum: 1
+        min:
+          type: integer
+        max:
+          type: integer
+          minimum: 0
+          maximum: 255
+        digitalRead:
+          type: boolean
+        digitalWrite:
+          type: boolean
+        analogRead:
+          type: boolean
+        analogWrite:
+          type: boolean
+    BoardResponse:
+      type: object
+      properties:
+        pins:
+          type: array
+          items:
+            $ref: '#/components/schemas/PinResponse'
+          

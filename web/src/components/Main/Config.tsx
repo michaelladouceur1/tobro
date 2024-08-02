@@ -1,31 +1,42 @@
 import {
   Avatar,
   Box,
-  Card,
   Divider,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
+  Modal,
   SpeedDial,
   SpeedDialAction,
+  SpeedDialIcon,
   Stack,
   styled,
   Switch,
-  Typography,
 } from "@mui/material";
-import ArduinoNanoSVG from "../../assets/arduino-nano.svg";
-import {useEffect, useRef} from "react";
 import {useAtomValue} from "jotai";
+import {FaPlus, FaRegFolder} from "react-icons/fa";
+import {PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
 import {boardAtom} from "../../atoms/boardAtom";
-import {DigitalState, Pin, PinMode, PinType} from "../../types";
-import {PiMagicWand, PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
 import {useHttpApi} from "../../hooks/useHttpApi";
 import {theme} from "../../theme";
+import {DigitalState, Pin, PinMode, PinType} from "../../types";
+import {useState} from "react";
 
 export function Config() {
   const api = useHttpApi();
   const board = useAtomValue(boardAtom);
+
+  const [newCircuitModalOpen, setNewCircuitModalOpen] = useState(false);
+  const [openCircuitModalOpen, setOpenCircuitModalOpen] = useState(false);
+
+  const handleNewCircuitOpen = () => {
+    setNewCircuitModalOpen(true);
+    setOpenCircuitModalOpen(false);
+  };
+  const handleNewCircuitClose = () => {
+    setNewCircuitModalOpen(false);
+  };
   //   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   //   useEffect(() => {
@@ -99,12 +110,38 @@ export function Config() {
   });
 
   const actions = [
-    {icon: <Switch />, name: "Mode"},
-    {icon: <Switch />, name: "State"},
+    {
+      icon: <FaPlus size="50%" />,
+      name: "New Circuit",
+      onclick: handleNewCircuitOpen,
+    },
+    {
+      icon: <FaRegFolder size="50%" />,
+      name: "Open Circuit",
+      onclick: () => console.log("Open Circuit"),
+    },
   ];
 
   return (
-    <Config>
+    <Config sx={{position: "relative"}}>
+      <Modal open={newCircuitModalOpen} onClose={handleNewCircuitClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            bgcolor: "background.paper",
+            border: "2px solid #000",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <h2>New Circuit</h2>
+          <p>Content</p>
+        </Box>
+      </Modal>
       <List dense={true}>
         {board.pins.map((pin) => {
           return (
@@ -147,6 +184,21 @@ export function Config() {
         })}
       </List>
       {/* <SVG src={ArduinoNanoSVG} alt="Arduino Nano" /> */}
+      <SpeedDial
+        ariaLabel="Speedial"
+        sx={{position: "absolute", right: "20px", top: "20px"}}
+        icon={<SpeedDialIcon />}
+        direction="left"
+      >
+        {actions.map((action) => (
+          <SpeedDialAction
+            key={action.name}
+            icon={action.icon}
+            tooltipTitle={action.name}
+            onClick={action.onclick}
+          />
+        ))}
+      </SpeedDial>
     </Config>
   );
 }

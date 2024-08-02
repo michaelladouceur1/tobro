@@ -48,8 +48,7 @@ func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
 
 	board = NewBoard(boardType, portServer)
 
-	boardTypeStr := string(boardType)
-	json.NewEncoder(w).Encode(CreateCircuitResponse{Board: &boardTypeStr})
+	json.NewEncoder(w).Encode(createBoardResponse(*board))
 }
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {

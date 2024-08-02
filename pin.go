@@ -29,7 +29,7 @@ type Pin struct {
 	DigitalWrite bool
 	AnalogRead   bool
 	AnalogWrite  bool
-	Mode         chan int
+	Mode         PinMode
 	State        chan int
 }
 
@@ -69,7 +69,7 @@ func NewPin(ps *PortServer, id int, config PinConfig) *Pin {
 		DigitalWrite: config.DigitalWrite,
 		AnalogRead:   config.AnalogRead,
 		AnalogWrite:  config.AnalogWrite,
-		Mode:         make(chan int),
+		Mode:         PinInput,
 		State:        make(chan int),
 	}
 }
@@ -84,6 +84,7 @@ func (p *Pin) MarshalJSON() ([]byte, error) {
 		"digitalWrite": p.DigitalWrite,
 		"analogRead":   p.AnalogRead,
 		"analogWrite":  p.AnalogWrite,
+		"mode":         p.Mode,
 	})
 }
 
@@ -103,7 +104,7 @@ func (p *Pin) SetMode(mode SetupPinRequestMode) error {
 		return err
 	}
 
-	p.Mode <- int(pinMode)
+	p.Mode = pinMode
 
 	return nil
 }

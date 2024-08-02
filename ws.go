@@ -53,15 +53,15 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 	}
 }
 
-func createPinModeResponse(id int, mode int) BaseResponse[PinModeResponseData] {
-	return BaseResponse[PinModeResponseData]{
-		Type: "pin_mode",
-		Data: PinModeResponseData{
-			ID:   id,
-			Mode: mode,
-		},
-	}
-}
+// func createPinModeResponse(id int, mode int) BaseResponse[PinModeResponseData] {
+// 	return BaseResponse[PinModeResponseData]{
+// 		Type: "pin_mode",
+// 		Data: PinModeResponseData{
+// 			ID:   id,
+// 			Mode: mode,
+// 		},
+// 	}
+// }
 
 func createPinStateResponse(id int, state int) BaseResponse[PinStateResponseData] {
 	return BaseResponse[PinStateResponseData]{

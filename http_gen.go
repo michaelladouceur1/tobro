@@ -28,6 +28,11 @@ type AnalogWritePinResponse struct {
 	Value *int `json:"value,omitempty"`
 }
 
+// BoardResponse defines model for BoardResponse.
+type BoardResponse struct {
+	Pins *[]PinResponse `json:"pins,omitempty"`
+}
+
 // ConnectRequest defines model for ConnectRequest.
 type ConnectRequest struct {
 	Port string `json:"port"`
@@ -45,13 +50,6 @@ type CreateCircuitRequest struct {
 	Name  string      `json:"name"`
 }
 
-// CreateCircuitResponse defines model for CreateCircuitResponse.
-type CreateCircuitResponse struct {
-	Board     *string `json:"board,omitempty"`
-	Name      *string `json:"name,omitempty"`
-	Timestamp *int    `json:"timestamp,omitempty"`
-}
-
 // DigitalWritePinRequest defines model for DigitalWritePinRequest.
 type DigitalWritePinRequest struct {
 	Pin   int `json:"pin"`
@@ -67,6 +65,19 @@ type DigitalWritePinResponse struct {
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
 	Message *string `json:"message,omitempty"`
+}
+
+// PinResponse defines model for PinResponse.
+type PinResponse struct {
+	AnalogRead   *bool        `json:"analogRead,omitempty"`
+	AnalogWrite  *bool        `json:"analogWrite,omitempty"`
+	DigitalRead  *bool        `json:"digitalRead,omitempty"`
+	DigitalWrite *bool        `json:"digitalWrite,omitempty"`
+	Id           *int         `json:"id,omitempty"`
+	Max          *int         `json:"max,omitempty"`
+	Min          *int         `json:"min,omitempty"`
+	Mode         *int         `json:"mode,omitempty"`
+	Type         *interface{} `json:"type,omitempty"`
 }
 
 // Pong defines model for Pong.

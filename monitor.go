@@ -64,21 +64,6 @@ func (m *Monitor) watchPinState() {
 					log.Print("Pin state: ", string(json))
 
 					m.hub.broadcast <- json
-				case mode, ok := <-pin.Mode:
-					if !ok {
-						log.Printf("Pin %d mode channel is closed", pin.ID)
-						return
-					}
-
-					json, err := json.Marshal(createPinModeResponse(pin.ID, mode))
-					if err != nil {
-						log.Fatal(err)
-						return
-					}
-
-					log.Print("Pin mode: ", string(json))
-
-					m.hub.broadcast <- json
 				}
 			}(pin)
 		}
