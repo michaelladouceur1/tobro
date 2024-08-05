@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"tobro/db"
 )
 
 type HTTPServer struct{}
@@ -47,6 +48,16 @@ func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	board = NewBoard(boardType, portServer)
+
+	createdBoard, err := dbClient.Circuit.CreateOne(db.Circuit.Name.Equals(req.Name), db.Circuit.Board.Set(string(boardType))).Exec(dbCtx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for _, pin := range board.Pins {
+		pinModeInt := int(pin.Mode)
+		dbClient.Pin.CreateOne(db.Pin.Pin.Set(pin.ID), db.Pin.Circuit.Link(db.Circuit.ID.Equals(createdBoard.ID)), db.Pin.Mode.Set(pinModeInt)).Exec(dbCtx)
+	}
 
 	json.NewEncoder(w).Encode(createBoardResponse(*board))
 }

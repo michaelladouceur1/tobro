@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"tobro/db"
 
 	"github.com/gorilla/mux"
 )
@@ -26,11 +28,20 @@ func init() {
 // var port serial.Port
 var portServer *PortServer
 var httpServer *HTTPServer
+var dbCtx context.Context
+var dbClient *db.PrismaClient
 var board *Board
 
 func main() {
 	portServer = NewPortServer()
 	httpServer = NewHTTPServer()
+
+	dbCtx = context.Background()
+	dbClient = db.NewClient()
+	if err := dbClient.Connect(); err != nil {
+		log.Fatal(err)
+	}
+	defer dbClient.Disconnect()
 
 	hub := NewWSHub()
 	go hub.Run()
