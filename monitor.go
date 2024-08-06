@@ -7,16 +7,16 @@ import (
 )
 
 type Monitor struct {
-	hub   *WSHub
-	ps    *PortServer
-	board *Board
+	hub     *WSHub
+	ps      *PortServer
+	circuit *Circuit
 }
 
-func NewMonitor(hub *WSHub, ps *PortServer, board *Board) *Monitor {
+func NewMonitor(hub *WSHub, ps *PortServer, circuit *Circuit) *Monitor {
 	return &Monitor{
-		hub:   hub,
-		ps:    ps,
-		board: board,
+		hub:     hub,
+		ps:      ps,
+		circuit: circuit,
 	}
 }
 
@@ -41,12 +41,12 @@ func (m *Monitor) watchPorts() {
 
 func (m *Monitor) watchPinState() {
 	for {
-		if m.board == nil {
+		if m.circuit == nil {
 			log.Print("Board is nil")
 			continue
 		}
 
-		for _, pin := range m.board.Pins {
+		for _, pin := range m.circuit.Pins {
 			go func(pin Pin) {
 				select {
 				case state, ok := <-pin.State:

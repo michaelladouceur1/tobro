@@ -4,13 +4,13 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import {useAtomValue} from "jotai";
 import {PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
-import {boardAtom} from "../../atoms/boardAtom";
+import {circuitAtom} from "../../atoms/circuitAtom";
 import {useHttpApi} from "../../hooks/useHttpApi";
 import {DigitalState, Pin, PinMode, PinType} from "../../types";
 
 export function PinList() {
   const api = useHttpApi();
-  const board = useAtomValue(boardAtom);
+  const circuit = useAtomValue(circuitAtom);
 
   const handleSetupPin = async (pin: Pin) => {
     const {id} = pin;
@@ -29,7 +29,7 @@ export function PinList() {
   return (
     // <Card variant="outlined" sx={{gridArea: "main", overflowY: "auto"}}>
     <List dense={true}>
-      {board.pins.map((pin) => (
+      {circuit.pins.map((pin) => (
         <>
           <ListItem key={pin.id}>
             <ListItemIcon>

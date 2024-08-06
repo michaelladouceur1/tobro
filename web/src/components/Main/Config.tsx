@@ -17,7 +17,7 @@ import {
 import {useAtomValue} from "jotai";
 import {FaPlus, FaRegFolder} from "react-icons/fa";
 import {PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
-import {boardAtom} from "../../atoms/boardAtom";
+import {circuitAtom} from "../../atoms/circuitAtom";
 import {useHttpApi} from "../../hooks/useHttpApi";
 import {theme} from "../../theme";
 import {DigitalState, Pin, PinMode, PinType} from "../../types";
@@ -25,7 +25,7 @@ import {useState} from "react";
 
 export function Config() {
   const api = useHttpApi();
-  const board = useAtomValue(boardAtom);
+  const circuit = useAtomValue(circuitAtom);
 
   const [newCircuitModalOpen, setNewCircuitModalOpen] = useState(false);
   const [openCircuitModalOpen, setOpenCircuitModalOpen] = useState(false);
@@ -81,7 +81,8 @@ export function Config() {
   const handleSetupPin = async (pin: Pin) => {
     const {id} = pin;
     const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
-    await api.setupPinPost({setupPinRequest: {pin: id, mode}});
+    const res = await api.setupPinPost({setupPinRequest: {pin: id, mode}});
+    console.log(res);
   };
 
   const handleDigitalWrite = async (pin: Pin) => {
@@ -143,7 +144,7 @@ export function Config() {
         </Box>
       </Modal>
       <List dense={true}>
-        {board.pins.map((pin) => {
+        {circuit.pins.map((pin) => {
           return (
             <>
               <ListItem key={pin.id}>

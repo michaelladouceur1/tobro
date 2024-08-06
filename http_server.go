@@ -46,7 +46,7 @@ func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	board = NewBoard(boardType, portServer)
+	circuit = NewCircuit(boardType, portServer)
 
 	createdBoard, err := dal.CreateCircuit(req.Name, boardType)
 	if err != nil {
@@ -54,13 +54,13 @@ func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = dal.AddPins(createdBoard.ID, board.Pins)
+	_, err = dal.AddPins(createdBoard.ID, circuit.Pins)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(createBoardResponse(*board))
+	json.NewEncoder(w).Encode(createCircuitResponse(*circuit))
 }
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +70,7 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pin, err := board.GetPin(req.Pin)
+	pin, err := circuit.GetPin(req.Pin)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -93,7 +93,7 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pin, err := board.GetDigitalWritePin(req.Pin)
+	pin, err := circuit.GetDigitalWritePin(req.Pin)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -115,7 +115,7 @@ func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	pin, err := board.GetAnalogWritePin(req.Pin)
+	pin, err := circuit.GetAnalogWritePin(req.Pin)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

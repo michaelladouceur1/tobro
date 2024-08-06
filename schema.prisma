@@ -7,26 +7,26 @@ generator client {
     provider = "go run github.com/steebchen/prisma-client-go"
 }
 
-model Circuit {
+model CircuitDB {
     id        Int      @id @default(autoincrement())
     name      String
     board     String
-    pins      Pin[]
+    pins      PinDB[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
 
-model Sketch {
+model SketchDB {
     id        Int      @id @default(autoincrement())
     name      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
 
-model Pin {
+model PinDB {
     id        Int     @id @default(autoincrement())
     pin       Int
     mode      Int     @default(0) // 0 = INPUT, 1 = OUTPUT
-    circuit   Circuit @relation(fields: [circuitId], references: [id])
+    circuit   CircuitDB @relation(fields: [circuitId], references: [id])
     circuitId Int
 }

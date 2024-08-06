@@ -26,11 +26,11 @@ export interface Pin {
   state: number;
 }
 
-export interface Board {
+export interface Circuit {
   pins: Pin[];
 }
 
-export interface BoardState {
+export interface CircuitState {
   [key: number]: number;
 }
 

@@ -12,11 +12,11 @@ const (
 	ArduinoNano SupportedBoards = "arduino_nano"
 )
 
-type Board struct {
+type Circuit struct {
 	Pins []Pin
 }
 
-func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
+func NewCircuit(boardType SupportedBoards, ps *PortServer) *Circuit {
 	switch boardType {
 	case ArduinoNano:
 		digitalPinConfig := PinConfig{
@@ -47,11 +47,11 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 			PinType:      PinAnalog,
 			DigitalRead:  false,
 			DigitalWrite: false,
-			AnalogRead:  true,
-			AnalogWrite: false,
+			AnalogRead:   true,
+			AnalogWrite:  false,
 		}
-		
-		return &Board{
+
+		return &Circuit{
 			Pins: []Pin{
 				*NewPin(ps, 2, digitalPinConfig),
 				*NewPin(ps, 3, digitalPwmPinConfig),
@@ -80,16 +80,15 @@ func NewBoard(boardType SupportedBoards, ps *PortServer) *Board {
 	}
 }
 
-
-func (b *Board) PinCount() int {
+func (b *Circuit) PinCount() int {
 	return len(b.Pins)
 }
 
-func (b *Board) GetState() Board {
+func (b *Circuit) GetState() Circuit {
 	return *b
 }
 
-func (b *Board) GetPin(id int) (*Pin, error) {
+func (b *Circuit) GetPin(id int) (*Pin, error) {
 	for _, p := range b.Pins {
 		if p.ID == id {
 			return &p, nil
@@ -99,7 +98,7 @@ func (b *Board) GetPin(id int) (*Pin, error) {
 	return nil, &PinNotFoundError{}
 }
 
-func (b *Board) GetPins() []*Pin {
+func (b *Circuit) GetPins() []*Pin {
 	var pins []*Pin
 	for _, p := range b.Pins {
 		pins = append(pins, &p)
@@ -108,7 +107,7 @@ func (b *Board) GetPins() []*Pin {
 	return pins
 }
 
-func (b *Board) GetDigitalWritePin(id int) (DigitalWritePin, error) {
+func (b *Circuit) GetDigitalWritePin(id int) (DigitalWritePin, error) {
 	for _, p := range b.Pins {
 		if p.ID == id {
 			if p.DigitalWrite {
@@ -117,13 +116,13 @@ func (b *Board) GetDigitalWritePin(id int) (DigitalWritePin, error) {
 
 			return nil, &PinNotDigitalError{}
 		}
-	
+
 	}
 
 	return nil, &PinNotFoundError{}
 }
 
-func (b *Board) GetAnalogWritePin(id int) (AnalogWritePin, error) {
+func (b *Circuit) GetAnalogWritePin(id int) (AnalogWritePin, error) {
 	for _, p := range b.Pins {
 		if p.ID == id {
 			if p.AnalogWrite {

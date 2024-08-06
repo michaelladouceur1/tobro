@@ -27,7 +27,7 @@ func init() {
 var portServer *PortServer
 var httpServer *HTTPServer
 var dal *DAL
-var board *Board
+var circuit *Circuit
 
 func main() {
 	portServer = NewPortServer()
@@ -42,9 +42,9 @@ func main() {
 	hub := NewWSHub()
 	go hub.Run()
 
-	board = NewBoard(ArduinoNano, portServer)
+	circuit = NewCircuit(ArduinoNano, portServer)
 
-	monitor := NewMonitor(hub, portServer, board)
+	monitor := NewMonitor(hub, portServer, circuit)
 	go monitor.Run()
 
 	route := mux.NewRouter()

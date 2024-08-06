@@ -17,7 +17,7 @@ type BaseResponse[T any] struct {
 	Data T      `json:"data"`
 }
 
-type BoardResponseData struct {
+type CircuitResponseData struct {
 	Pins []Pin `json:"pins"`
 }
 
@@ -35,11 +35,11 @@ type PinStateResponseData struct {
 	State int `json:"state"`
 }
 
-func createBoardResponse(board Board) BaseResponse[BoardResponseData] {
-	return BaseResponse[BoardResponseData]{
-		Type: "board",
-		Data: BoardResponseData{
-			Pins: board.Pins,
+func createCircuitResponse(circuit Circuit) BaseResponse[CircuitResponseData] {
+	return BaseResponse[CircuitResponseData]{
+		Type: "circuit",
+		Data: CircuitResponseData{
+			Pins: circuit.Pins,
 		},
 	}
 }
@@ -95,15 +95,15 @@ func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 	client := &WSClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
-	sendBoardState(client)
+	sendCircuitState(client)
 
 	go client.Write()
 	go client.Read()
 }
 
-func sendBoardState(c *WSClient) {
-	log.Print("Sending board state to client")
-	json, err := json.Marshal(createBoardResponse(*board))
+func sendCircuitState(c *WSClient) {
+	log.Print("Sending circuit state to client")
+	json, err := json.Marshal(createCircuitResponse(*circuit))
 	if err != nil {
 		log.Fatal(err)
 	}

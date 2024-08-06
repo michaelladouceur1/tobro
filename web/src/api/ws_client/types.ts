@@ -1,13 +1,13 @@
-import type { Board, Ports } from "../../types";
+import type { Circuit, Ports } from "../../types";
 
 export enum MessageType {
-  Board = "board",
+  Circuit = "circuit",
   Ports = "ports",
   PinMode = "pin_mode",
   PinState = "pin_state",
 }
 
-interface BoardMessage extends Board {}
+interface CircuitMessage extends Circuit {}
 
 interface PortsMessage extends Ports {}
 
@@ -22,7 +22,7 @@ interface PinStateMessage {
 }
 
 export type MessageDataMap = {
-  [MessageType.Board]: BoardMessage;
+  [MessageType.Circuit]: CircuitMessage;
   [MessageType.Ports]: PortsMessage;
   [MessageType.PinMode]: PinModeMessage;
   [MessageType.PinState]: PinStateMessage;
