@@ -43,19 +43,6 @@ export function useWsApi() {
           return { pins: newCircuit };
         });
       },
-      [MessageType.PinMode]: (data) => {
-        console.log("PinMode", data);
-        const { id, mode } = data;
-        setCircuit((prev) => {
-          const newCircuit = prev.pins.map((pin) => {
-            if (pin.id === id) {
-              return { ...pin, mode: mode === 0 ? PinMode.Input : PinMode.Output };
-            }
-            return pin;
-          });
-          return { pins: newCircuit };
-        });
-      },
     });
 
     setWs(ws);

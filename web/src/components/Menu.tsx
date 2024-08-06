@@ -5,7 +5,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   Toolbar,
 } from "@mui/material";
 import {useAtomValue} from "jotai";

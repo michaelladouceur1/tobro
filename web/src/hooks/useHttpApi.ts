@@ -1,7 +1,8 @@
 import { useSetAtom } from "jotai";
-import { DefaultApi, Configuration } from "../api/http_client";
-import { DigitalState, Pin, PinMode } from "../types";
+import { Configuration, DefaultApi } from "../api/http_client";
 import { circuitAtom } from "../atoms/circuitAtom";
+import { DigitalState, Pin, PinMode } from "../types";
+import { setCircuitFromSetupPinResponse } from "../utils/circuitUtils";
 
 export function useHttpApi() {
   const setCircuit = useSetAtom(circuitAtom);
@@ -9,27 +10,19 @@ export function useHttpApi() {
   const configuration = new Configuration({ basePath: "http://localhost:8080" });
   const api = new DefaultApi(configuration);
 
-  const handlers = {
+  return {
     connect: async (port: string) => {
       if (!port) return
       const res = await api.connectPost({ connectRequest: { port } });
+      return res;
     },
     setupPin: async (pin: Pin) => {
       try {
         const {id} = pin;
         const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
         const res = await api.setupPinPost({setupPinRequest: {pin: id, mode}});
-
-        // TODO: move to atom file
-        setCircuit((prev) => {
-          const newCircuit = prev.pins.map((pin) => {
-            if (pin.id === res.pin) {
-              return { ...pin, mode: res.mode  };
-            }
-            return pin;
-          });
-          return { pins: newCircuit };
-        });
+        setCircuitFromSetupPinResponse(setCircuit, res);
+        return res;
       } catch (error) {
         console.log(error);
       }
@@ -37,11 +30,8 @@ export function useHttpApi() {
     digitalWritePin: async (pin: Pin) => {
       const {id} = pin;
       const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
-      await api.digitalWritePinPost({
-        digitalWritePinRequest: {pin: id, value},
-      });
+      const res = await api.digitalWritePinPost({digitalWritePinRequest: {pin: id, value}});
+      return res;
     }
-  }
-
-  return handlers;
+  };
 }
