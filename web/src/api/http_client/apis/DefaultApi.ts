@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AnalogWritePinRequest,
   AnalogWritePinResponse,
-  BoardResponse,
+  CircuitResponse,
   ConnectRequest,
   ConnectResponse,
   CreateCircuitRequest,
@@ -33,8 +33,8 @@ import {
     AnalogWritePinRequestToJSON,
     AnalogWritePinResponseFromJSON,
     AnalogWritePinResponseToJSON,
-    BoardResponseFromJSON,
-    BoardResponseToJSON,
+    CircuitResponseFromJSON,
+    CircuitResponseToJSON,
     ConnectRequestFromJSON,
     ConnectRequestToJSON,
     ConnectResponseFromJSON,
@@ -136,7 +136,7 @@ export class DefaultApi extends runtime.BaseAPI {
 
     /**
      */
-    async createCircuitPostRaw(requestParameters: CreateCircuitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BoardResponse>> {
+    async createCircuitPostRaw(requestParameters: CreateCircuitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CircuitResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -151,12 +151,12 @@ export class DefaultApi extends runtime.BaseAPI {
             body: CreateCircuitRequestToJSON(requestParameters['createCircuitRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => BoardResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CircuitResponseFromJSON(jsonValue));
     }
 
     /**
      */
-    async createCircuitPost(requestParameters: CreateCircuitPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BoardResponse> {
+    async createCircuitPost(requestParameters: CreateCircuitPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CircuitResponse> {
         const response = await this.createCircuitPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

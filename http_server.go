@@ -82,8 +82,7 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	modeStr := string(req.Mode)
-	json.NewEncoder(w).Encode(SetupPinResponse{Mode: &modeStr, Pin: &req.Pin})
+	json.NewEncoder(w).Encode(SetupPinResponse{Mode: string(req.Mode), Pin: req.Pin})
 }
 
 func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request) {

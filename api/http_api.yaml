@@ -47,7 +47,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BoardResponse'
+                $ref: '#/components/schemas/CircuitResponse'
         '400':
           description: Create circuit post error response
           content:
@@ -275,7 +275,7 @@ components:
           type: boolean
         analogWrite:
           type: boolean
-    BoardResponse:
+    CircuitResponse:
       type: object
       properties:
         pins:

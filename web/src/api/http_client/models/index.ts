@@ -2,7 +2,7 @@
 /* eslint-disable */
 export * from './AnalogWritePinRequest';
 export * from './AnalogWritePinResponse';
-export * from './BoardResponse';
+export * from './CircuitResponse';
 export * from './ConnectRequest';
 export * from './ConnectResponse';
 export * from './CreateCircuitRequest';

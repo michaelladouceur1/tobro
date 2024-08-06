@@ -28,8 +28,8 @@ type AnalogWritePinResponse struct {
 	Value *int `json:"value,omitempty"`
 }
 
-// BoardResponse defines model for BoardResponse.
-type BoardResponse struct {
+// CircuitResponse defines model for CircuitResponse.
+type CircuitResponse struct {
 	Pins *[]PinResponse `json:"pins,omitempty"`
 }
 
@@ -96,8 +96,8 @@ type SetupPinRequestMode string
 
 // SetupPinResponse defines model for SetupPinResponse.
 type SetupPinResponse struct {
-	Mode *string `json:"mode,omitempty"`
-	Pin  *int    `json:"pin,omitempty"`
+	Mode string `json:"mode"`
+	Pin  int    `json:"pin"`
 }
 
 // PostAnalogWritePinJSONRequestBody defines body for PostAnalogWritePin for application/json ContentType.
