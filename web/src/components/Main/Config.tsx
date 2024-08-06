@@ -78,20 +78,20 @@ export function Config() {
   //     };
   //   }, []);
 
-  const handleSetupPin = async (pin: Pin) => {
-    const {id} = pin;
-    const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
-    const res = await api.setupPinPost({setupPinRequest: {pin: id, mode}});
-    console.log(res);
-  };
+  // const handleSetupPin = async (pin: Pin) => {
+  //   const {id} = pin;
+  //   const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
+  //   const res = await api.setupPinPost({setupPinRequest: {pin: id, mode}});
+  //   console.log(res);
+  // };
 
-  const handleDigitalWrite = async (pin: Pin) => {
-    const {id} = pin;
-    const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
-    await api.digitalWritePinPost({
-      digitalWritePinRequest: {pin: id, value},
-    });
-  };
+  // const handleDigitalWrite = async (pin: Pin) => {
+  //   const {id} = pin;
+  //   const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
+  //   await api.digitalWritePinPost({
+  //     digitalWritePinRequest: {pin: id, value},
+  //   });
+  // };
 
   const Config = styled(Box)({
     width: "100%",
@@ -160,7 +160,7 @@ export function Config() {
                           ? theme.palette.primary.main
                           : null,
                     }}
-                    onClick={() => handleDigitalWrite(pin)}
+                    onClick={() => api.digitalWritePin(pin)}
                   >
                     {pin.type === PinType.Digital ? (
                       <PiWaveSineLight size="20px" />
@@ -174,7 +174,7 @@ export function Config() {
                   <Switch
                     size="small"
                     checked={pin.mode === PinMode.Output}
-                    onChange={() => handleSetupPin(pin)}
+                    onChange={() => api.setupPin(pin)}
                   />
                   <p>O</p>
                 </Stack>

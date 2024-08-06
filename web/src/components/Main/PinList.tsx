@@ -12,19 +12,19 @@ export function PinList() {
   const api = useHttpApi();
   const circuit = useAtomValue(circuitAtom);
 
-  const handleSetupPin = async (pin: Pin) => {
-    const {id} = pin;
-    const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
-    await api.setupPinPost({setupPinRequest: {pin: id, mode}});
-  };
+  // const handleSetupPin = async (pin: Pin) => {
+  //   const {id} = pin;
+  //   const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
+  //   await api.setupPinPost({setupPinRequest: {pin: id, mode}});
+  // };
 
-  const handleDigitalWrite = async (pin: Pin) => {
-    const {id} = pin;
-    const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
-    await api.digitalWritePinPost({
-      digitalWritePinRequest: {pin: id, value},
-    });
-  };
+  // const handleDigitalWrite = async (pin: Pin) => {
+  //   const {id} = pin;
+  //   const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
+  //   await api.digitalWritePinPost({
+  //     digitalWritePinRequest: {pin: id, value},
+  //   });
+  // };
 
   return (
     // <Card variant="outlined" sx={{gridArea: "main", overflowY: "auto"}}>
@@ -42,11 +42,11 @@ export function PinList() {
             <ListItemText primary={pin.id} secondary={pin.type} />
             <Switch
               checked={pin.mode === PinMode.Output}
-              onChange={() => handleSetupPin(pin)}
+              onChange={() => api.setupPin(pin)}
             />
             <Switch
               checked={pin.state === pin.max}
-              onChange={() => handleDigitalWrite(pin)}
+              onChange={() => api.digitalWritePin(pin)}
             />
           </ListItem>
           <Divider />

@@ -24,19 +24,21 @@ export interface SetupPinResponse {
      * @type {number}
      * @memberof SetupPinResponse
      */
-    pin?: number;
+    pin: number;
     /**
      * 
      * @type {string}
      * @memberof SetupPinResponse
      */
-    mode?: string;
+    mode: string;
 }
 
 /**
  * Check if a given object implements the SetupPinResponse interface.
  */
 export function instanceOfSetupPinResponse(value: object): value is SetupPinResponse {
+    if (!('pin' in value) || value['pin'] === undefined) return false;
+    if (!('mode' in value) || value['mode'] === undefined) return false;
     return true;
 }
 
@@ -50,8 +52,8 @@ export function SetupPinResponseFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'pin': json['pin'] == null ? undefined : json['pin'],
-        'mode': json['mode'] == null ? undefined : json['mode'],
+        'pin': json['pin'],
+        'mode': json['mode'],
     };
 }
 

@@ -193,6 +193,9 @@ components:
             - "output"
     SetupPinResponse:
       type: object
+      required:
+        - pin
+        - mode
       properties:
         pin:
           type: integer
