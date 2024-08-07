@@ -59,12 +59,12 @@ export interface AnalogWritePinPostRequest {
     analogWritePinRequest?: AnalogWritePinRequest;
 }
 
-export interface ConnectPostRequest {
-    connectRequest?: ConnectRequest;
+export interface CircuitPostRequest {
+    createCircuitRequest?: CreateCircuitRequest;
 }
 
-export interface CreateCircuitPostRequest {
-    createCircuitRequest?: CreateCircuitRequest;
+export interface ConnectPostRequest {
+    connectRequest?: ConnectRequest;
 }
 
 export interface DigitalWritePinPostRequest {
@@ -109,6 +109,57 @@ export class DefaultApi extends runtime.BaseAPI {
 
     /**
      */
+    async circuitGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CircuitResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/circuit`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CircuitResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async circuitGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CircuitResponse> {
+        const response = await this.circuitGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async circuitPostRaw(requestParameters: CircuitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CircuitResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/circuit`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateCircuitRequestToJSON(requestParameters['createCircuitRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CircuitResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async circuitPost(requestParameters: CircuitPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CircuitResponse> {
+        const response = await this.circuitPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async connectPostRaw(requestParameters: ConnectPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ConnectResponse>> {
         const queryParameters: any = {};
 
@@ -131,33 +182,6 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async connectPost(requestParameters: ConnectPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ConnectResponse> {
         const response = await this.connectPostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async createCircuitPostRaw(requestParameters: CreateCircuitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CircuitResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/create_circuit`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: CreateCircuitRequestToJSON(requestParameters['createCircuitRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => CircuitResponseFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async createCircuitPost(requestParameters: CreateCircuitPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CircuitResponse> {
-        const response = await this.createCircuitPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

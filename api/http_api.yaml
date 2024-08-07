@@ -33,7 +33,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /create_circuit:
+  /circuit:
+    get:
+      responses:
+        '200':
+          description: Circuit get response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CircuitResponse'
+        '400':
+          description: Circuit get error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       requestBody:
         description: Create a circuit
@@ -250,13 +264,22 @@ components:
           maximum: 255
     PinResponse:
       type: object
+      required:
+        - id
+        - type
+        - mode
+        - min
+        - max
+        - digitalRead
+        - digitalWrite
+        - analogRead
+        - analogWrite
       properties:
         id:
           type: integer
         type:
-          enum:
-            - "analog"
-            - "digital"
+          type: string
+          example: "digital"
         mode:
           type: integer
           minimum: 0
@@ -277,6 +300,8 @@ components:
           type: boolean
     CircuitResponse:
       type: object
+      required:
+        - pins
       properties:
         pins:
           type: array

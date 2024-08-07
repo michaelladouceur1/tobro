@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -17,31 +16,13 @@ type BaseResponse[T any] struct {
 	Data T      `json:"data"`
 }
 
-type CircuitResponseData struct {
-	Pins []Pin `json:"pins"`
-}
-
 type PortsResponseData struct {
 	Ports []string `json:"ports"`
-}
-
-type PinModeResponseData struct {
-	ID   int `json:"id"`
-	Mode int `json:"mode"`
 }
 
 type PinStateResponseData struct {
 	ID    int `json:"id"`
 	State int `json:"state"`
-}
-
-func createCircuitResponse(circuit Circuit) BaseResponse[CircuitResponseData] {
-	return BaseResponse[CircuitResponseData]{
-		Type: "circuit",
-		Data: CircuitResponseData{
-			Pins: circuit.Pins,
-		},
-	}
 }
 
 func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
@@ -52,16 +33,6 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 		},
 	}
 }
-
-// func createPinModeResponse(id int, mode int) BaseResponse[PinModeResponseData] {
-// 	return BaseResponse[PinModeResponseData]{
-// 		Type: "pin_mode",
-// 		Data: PinModeResponseData{
-// 			ID:   id,
-// 			Mode: mode,
-// 		},
-// 	}
-// }
 
 func createPinStateResponse(id int, state int) BaseResponse[PinStateResponseData] {
 	return BaseResponse[PinStateResponseData]{
@@ -95,18 +66,6 @@ func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 	client := &WSClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
-	sendCircuitState(client)
-
 	go client.Write()
 	go client.Read()
-}
-
-func sendCircuitState(c *WSClient) {
-	log.Print("Sending circuit state to client")
-	json, err := json.Marshal(createCircuitResponse(*circuit))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	c.send <- json
 }

@@ -24,72 +24,70 @@ export interface PinResponse {
      * @type {number}
      * @memberof PinResponse
      */
-    id?: number;
+    id: number;
     /**
      * 
      * @type {string}
      * @memberof PinResponse
      */
-    type?: PinResponseTypeEnum;
+    type: string;
     /**
      * 
      * @type {number}
      * @memberof PinResponse
      */
-    mode?: number;
+    mode: number;
     /**
      * 
      * @type {number}
      * @memberof PinResponse
      */
-    min?: number;
+    min: number;
     /**
      * 
      * @type {number}
      * @memberof PinResponse
      */
-    max?: number;
+    max: number;
     /**
      * 
      * @type {boolean}
      * @memberof PinResponse
      */
-    digitalRead?: boolean;
+    digitalRead: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof PinResponse
      */
-    digitalWrite?: boolean;
+    digitalWrite: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof PinResponse
      */
-    analogRead?: boolean;
+    analogRead: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof PinResponse
      */
-    analogWrite?: boolean;
+    analogWrite: boolean;
 }
-
-
-/**
- * @export
- */
-export const PinResponseTypeEnum = {
-    Analog: 'analog',
-    Digital: 'digital'
-} as const;
-export type PinResponseTypeEnum = typeof PinResponseTypeEnum[keyof typeof PinResponseTypeEnum];
-
 
 /**
  * Check if a given object implements the PinResponse interface.
  */
 export function instanceOfPinResponse(value: object): value is PinResponse {
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('type' in value) || value['type'] === undefined) return false;
+    if (!('mode' in value) || value['mode'] === undefined) return false;
+    if (!('min' in value) || value['min'] === undefined) return false;
+    if (!('max' in value) || value['max'] === undefined) return false;
+    if (!('digitalRead' in value) || value['digitalRead'] === undefined) return false;
+    if (!('digitalWrite' in value) || value['digitalWrite'] === undefined) return false;
+    if (!('analogRead' in value) || value['analogRead'] === undefined) return false;
+    if (!('analogWrite' in value) || value['analogWrite'] === undefined) return false;
     return true;
 }
 
@@ -103,15 +101,15 @@ export function PinResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'id': json['id'] == null ? undefined : json['id'],
-        'type': json['type'] == null ? undefined : json['type'],
-        'mode': json['mode'] == null ? undefined : json['mode'],
-        'min': json['min'] == null ? undefined : json['min'],
-        'max': json['max'] == null ? undefined : json['max'],
-        'digitalRead': json['digitalRead'] == null ? undefined : json['digitalRead'],
-        'digitalWrite': json['digitalWrite'] == null ? undefined : json['digitalWrite'],
-        'analogRead': json['analogRead'] == null ? undefined : json['analogRead'],
-        'analogWrite': json['analogWrite'] == null ? undefined : json['analogWrite'],
+        'id': json['id'],
+        'type': json['type'],
+        'mode': json['mode'],
+        'min': json['min'],
+        'max': json['max'],
+        'digitalRead': json['digitalRead'],
+        'digitalWrite': json['digitalWrite'],
+        'analogRead': json['analogRead'],
+        'analogWrite': json['analogWrite'],
     };
 }
 

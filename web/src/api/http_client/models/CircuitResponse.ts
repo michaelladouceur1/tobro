@@ -31,13 +31,14 @@ export interface CircuitResponse {
      * @type {Array<PinResponse>}
      * @memberof CircuitResponse
      */
-    pins?: Array<PinResponse>;
+    pins: Array<PinResponse>;
 }
 
 /**
  * Check if a given object implements the CircuitResponse interface.
  */
 export function instanceOfCircuitResponse(value: object): value is CircuitResponse {
+    if (!('pins' in value) || value['pins'] === undefined) return false;
     return true;
 }
 
@@ -51,7 +52,7 @@ export function CircuitResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'pins': json['pins'] == null ? undefined : ((json['pins'] as Array<any>).map(PinResponseFromJSON)),
+        'pins': ((json['pins'] as Array<any>).map(PinResponseFromJSON)),
     };
 }
 
@@ -61,7 +62,7 @@ export function CircuitResponseToJSON(value?: CircuitResponse | null): any {
     }
     return {
         
-        'pins': value['pins'] == null ? undefined : ((value['pins'] as Array<any>).map(PinResponseToJSON)),
+        'pins': ((value['pins'] as Array<any>).map(PinResponseToJSON)),
     };
 }
 

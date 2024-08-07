@@ -24,38 +24,25 @@ export interface CreateCircuitResponse {
      * @type {string}
      * @memberof CreateCircuitResponse
      */
-    name: string;
+    name?: string;
     /**
      * 
      * @type {string}
      * @memberof CreateCircuitResponse
      */
-    board: CreateCircuitResponseBoardEnum;
+    board?: string;
     /**
      * 
      * @type {number}
      * @memberof CreateCircuitResponse
      */
-    timestamp: number;
+    timestamp?: number;
 }
-
-
-/**
- * @export
- */
-export const CreateCircuitResponseBoardEnum = {
-    ArduinoNano: 'arduino_nano'
-} as const;
-export type CreateCircuitResponseBoardEnum = typeof CreateCircuitResponseBoardEnum[keyof typeof CreateCircuitResponseBoardEnum];
-
 
 /**
  * Check if a given object implements the CreateCircuitResponse interface.
  */
 export function instanceOfCreateCircuitResponse(value: object): value is CreateCircuitResponse {
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('board' in value) || value['board'] === undefined) return false;
-    if (!('timestamp' in value) || value['timestamp'] === undefined) return false;
     return true;
 }
 
@@ -69,9 +56,9 @@ export function CreateCircuitResponseFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'name': json['name'],
-        'board': json['board'],
-        'timestamp': json['timestamp'],
+        'name': json['name'] == null ? undefined : json['name'],
+        'board': json['board'] == null ? undefined : json['board'],
+        'timestamp': json['timestamp'] == null ? undefined : json['timestamp'],
     };
 }
 

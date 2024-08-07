@@ -2,7 +2,7 @@ import { useSetAtom } from "jotai";
 import { Configuration, DefaultApi } from "../api/http_client";
 import { circuitAtom } from "../atoms/circuitAtom";
 import { DigitalState, Pin, PinMode } from "../types";
-import { setCircuitFromSetupPinResponse } from "../utils/circuitUtils";
+import { setCircuitFromCircuitResponse, setCircuitFromSetupPinResponse } from "../utils/circuitUtils";
 
 export function useHttpApi() {
   const setCircuit = useSetAtom(circuitAtom);
@@ -11,6 +11,15 @@ export function useHttpApi() {
   const api = new DefaultApi(configuration);
 
   return {
+    init: async () => {
+      const circuitRes = await api.circuitGet();
+      setCircuitFromCircuitResponse(setCircuit, circuitRes);
+    },
+    getCircuit: async () => {
+      const res = await api.circuitGet();
+      setCircuitFromCircuitResponse(setCircuit, res);
+      return res;
+    },
     connect: async (port: string) => {
       if (!port) return
       const res = await api.connectPost({ connectRequest: { port } });

@@ -30,7 +30,7 @@ type AnalogWritePinResponse struct {
 
 // CircuitResponse defines model for CircuitResponse.
 type CircuitResponse struct {
-	Pins *[]PinResponse `json:"pins,omitempty"`
+	Pins []PinResponse `json:"pins"`
 }
 
 // ConnectRequest defines model for ConnectRequest.
@@ -69,15 +69,15 @@ type ErrorResponse struct {
 
 // PinResponse defines model for PinResponse.
 type PinResponse struct {
-	AnalogRead   *bool        `json:"analogRead,omitempty"`
-	AnalogWrite  *bool        `json:"analogWrite,omitempty"`
-	DigitalRead  *bool        `json:"digitalRead,omitempty"`
-	DigitalWrite *bool        `json:"digitalWrite,omitempty"`
-	Id           *int         `json:"id,omitempty"`
-	Max          *int         `json:"max,omitempty"`
-	Min          *int         `json:"min,omitempty"`
-	Mode         *int         `json:"mode,omitempty"`
-	Type         *interface{} `json:"type,omitempty"`
+	AnalogRead   bool   `json:"analogRead"`
+	AnalogWrite  bool   `json:"analogWrite"`
+	DigitalRead  bool   `json:"digitalRead"`
+	DigitalWrite bool   `json:"digitalWrite"`
+	Id           int    `json:"id"`
+	Max          int    `json:"max"`
+	Min          int    `json:"min"`
+	Mode         int    `json:"mode"`
+	Type         string `json:"type"`
 }
 
 // Pong defines model for Pong.
@@ -103,11 +103,11 @@ type SetupPinResponse struct {
 // PostAnalogWritePinJSONRequestBody defines body for PostAnalogWritePin for application/json ContentType.
 type PostAnalogWritePinJSONRequestBody = AnalogWritePinRequest
 
+// PostCircuitJSONRequestBody defines body for PostCircuit for application/json ContentType.
+type PostCircuitJSONRequestBody = CreateCircuitRequest
+
 // PostConnectJSONRequestBody defines body for PostConnect for application/json ContentType.
 type PostConnectJSONRequestBody = ConnectRequest
-
-// PostCreateCircuitJSONRequestBody defines body for PostCreateCircuit for application/json ContentType.
-type PostCreateCircuitJSONRequestBody = CreateCircuitRequest
 
 // PostDigitalWritePinJSONRequestBody defines body for PostDigitalWritePin for application/json ContentType.
 type PostDigitalWritePinJSONRequestBody = DigitalWritePinRequest
@@ -121,11 +121,14 @@ type ServerInterface interface {
 	// (POST /analog_write_pin)
 	PostAnalogWritePin(w http.ResponseWriter, r *http.Request)
 
+	// (GET /circuit)
+	GetCircuit(w http.ResponseWriter, r *http.Request)
+
+	// (POST /circuit)
+	PostCircuit(w http.ResponseWriter, r *http.Request)
+
 	// (POST /connect)
 	PostConnect(w http.ResponseWriter, r *http.Request)
-
-	// (POST /create_circuit)
-	PostCreateCircuit(w http.ResponseWriter, r *http.Request)
 
 	// (POST /digital_write_pin)
 	PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
@@ -161,12 +164,12 @@ func (siw *ServerInterfaceWrapper) PostAnalogWritePin(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostConnect operation middleware
-func (siw *ServerInterfaceWrapper) PostConnect(w http.ResponseWriter, r *http.Request) {
+// GetCircuit operation middleware
+func (siw *ServerInterfaceWrapper) GetCircuit(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostConnect(w, r)
+		siw.Handler.GetCircuit(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -176,12 +179,27 @@ func (siw *ServerInterfaceWrapper) PostConnect(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostCreateCircuit operation middleware
-func (siw *ServerInterfaceWrapper) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
+// PostCircuit operation middleware
+func (siw *ServerInterfaceWrapper) PostCircuit(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostCreateCircuit(w, r)
+		siw.Handler.PostCircuit(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostConnect operation middleware
+func (siw *ServerInterfaceWrapper) PostConnect(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostConnect(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -351,9 +369,11 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 
 	r.HandleFunc(options.BaseURL+"/analog_write_pin", wrapper.PostAnalogWritePin).Methods("POST")
 
-	r.HandleFunc(options.BaseURL+"/connect", wrapper.PostConnect).Methods("POST")
+	r.HandleFunc(options.BaseURL+"/circuit", wrapper.GetCircuit).Methods("GET")
 
-	r.HandleFunc(options.BaseURL+"/create_circuit", wrapper.PostCreateCircuit).Methods("POST")
+	r.HandleFunc(options.BaseURL+"/circuit", wrapper.PostCircuit).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/connect", wrapper.PostConnect).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin).Methods("POST")
 

@@ -11,6 +11,28 @@ func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{}
 }
 
+func pinResponseFromPin(pin Pin) PinResponse {
+	return PinResponse{
+		Id:           pin.ID,
+		Type:         string(pin.PinType),
+		Mode:         int(pin.Mode),
+		Min:          pin.Min,
+		Max:          pin.Max,
+		DigitalRead:  pin.DigitalRead,
+		DigitalWrite: pin.DigitalWrite,
+		AnalogRead:   pin.AnalogRead,
+		AnalogWrite:  pin.AnalogWrite,
+	}
+}
+
+func pinResponseFromPins(pins []Pin) []PinResponse {
+	pinResponses := make([]PinResponse, 0)
+	for _, pin := range pins {
+		pinResponses = append(pinResponses, pinResponseFromPin(pin))
+	}
+	return pinResponses
+}
+
 func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
 }
@@ -33,7 +55,12 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
 
-func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
+func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
+	pinResponses := pinResponseFromPins(circuit.Pins)
+	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
+}
+
+func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 	var req CreateCircuitRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -60,7 +87,8 @@ func (s *HTTPServer) PostCreateCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(createCircuitResponse(*circuit))
+	pinResponses := pinResponseFromPins(circuit.Pins)
+	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
 }
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {

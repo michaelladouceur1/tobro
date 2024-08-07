@@ -1,6 +1,6 @@
 import { SetStateAction } from "jotai";
-import { SetupPinResponse } from "../api/http_client";
-import { Circuit } from "../types";
+import { CircuitResponse, SetupPinResponse } from "../api/http_client";
+import { Circuit, PinMode } from "../types";
 
 export function setCircuitFromSetupPinResponse(setCircuit: (update: SetStateAction<Circuit>) => void, data: SetupPinResponse) {
     setCircuit((prev) => {
@@ -12,4 +12,8 @@ export function setCircuitFromSetupPinResponse(setCircuit: (update: SetStateActi
         });
         return { pins: newCircuit };
       });
+}
+
+export function setCircuitFromCircuitResponse(setCircuit: (update: SetStateAction<Circuit>) => void, data: CircuitResponse) {
+    setCircuit({pins: data.pins.map((pin) => ({...pin, state: 0, mode: pin.mode === 0 ? PinMode.Input : PinMode.Output}))});
 }
