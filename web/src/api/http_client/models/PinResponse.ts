@@ -24,7 +24,7 @@ export interface PinResponse {
      * @type {number}
      * @memberof PinResponse
      */
-    id: number;
+    pinNumber: number;
     /**
      * 
      * @type {string}
@@ -79,7 +79,7 @@ export interface PinResponse {
  * Check if a given object implements the PinResponse interface.
  */
 export function instanceOfPinResponse(value: object): value is PinResponse {
-    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('pinNumber' in value) || value['pinNumber'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
     if (!('mode' in value) || value['mode'] === undefined) return false;
     if (!('min' in value) || value['min'] === undefined) return false;
@@ -101,7 +101,7 @@ export function PinResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'id': json['id'],
+        'pinNumber': json['pinNumber'],
         'type': json['type'],
         'mode': json['mode'],
         'min': json['min'],
@@ -119,7 +119,7 @@ export function PinResponseToJSON(value?: PinResponse | null): any {
     }
     return {
         
-        'id': value['id'],
+        'pinNumber': value['pinNumber'],
         'type': value['type'],
         'mode': value['mode'],
         'min': value['min'],

@@ -24,7 +24,7 @@ export interface DigitalWritePinResponse {
      * @type {number}
      * @memberof DigitalWritePinResponse
      */
-    pin?: number;
+    pinNumber?: number;
     /**
      * 
      * @type {number}
@@ -50,7 +50,7 @@ export function DigitalWritePinResponseFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'pin': json['pin'] == null ? undefined : json['pin'],
+        'pinNumber': json['pinNumber'] == null ? undefined : json['pinNumber'],
         'value': json['value'] == null ? undefined : json['value'],
     };
 }
@@ -61,7 +61,7 @@ export function DigitalWritePinResponseToJSON(value?: DigitalWritePinResponse | 
     }
     return {
         
-        'pin': value['pin'],
+        'pinNumber': value['pinNumber'],
         'value': value['value'],
     };
 }

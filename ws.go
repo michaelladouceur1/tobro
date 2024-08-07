@@ -21,8 +21,8 @@ type PortsResponseData struct {
 }
 
 type PinStateResponseData struct {
-	ID    int `json:"id"`
-	State int `json:"state"`
+	PinNumber int `json:"pinNumber"`
+	State     int `json:"state"`
 }
 
 func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
@@ -34,12 +34,12 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 	}
 }
 
-func createPinStateResponse(id int, state int) BaseResponse[PinStateResponseData] {
+func createPinStateResponse(pinNumber int, state int) BaseResponse[PinStateResponseData] {
 	return BaseResponse[PinStateResponseData]{
 		Type: "pin_state",
 		Data: PinStateResponseData{
-			ID:    id,
-			State: state,
+			PinNumber: pinNumber,
+			State:     state,
 		},
 	}
 }

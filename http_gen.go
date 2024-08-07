@@ -18,14 +18,14 @@ const (
 
 // AnalogWritePinRequest defines model for AnalogWritePinRequest.
 type AnalogWritePinRequest struct {
-	Pin   int `json:"pin"`
-	Value int `json:"value"`
+	PinNumber int `json:"pinNumber"`
+	Value     int `json:"value"`
 }
 
 // AnalogWritePinResponse defines model for AnalogWritePinResponse.
 type AnalogWritePinResponse struct {
-	Pin   *int `json:"pin,omitempty"`
-	Value *int `json:"value,omitempty"`
+	PinNumber *int `json:"pinNumber,omitempty"`
+	Value     *int `json:"value,omitempty"`
 }
 
 // CircuitResponse defines model for CircuitResponse.
@@ -52,14 +52,14 @@ type CreateCircuitRequest struct {
 
 // DigitalWritePinRequest defines model for DigitalWritePinRequest.
 type DigitalWritePinRequest struct {
-	Pin   int `json:"pin"`
-	Value int `json:"value"`
+	PinNumber *int `json:"pinNumber,omitempty"`
+	Value     int  `json:"value"`
 }
 
 // DigitalWritePinResponse defines model for DigitalWritePinResponse.
 type DigitalWritePinResponse struct {
-	Pin   *int `json:"pin,omitempty"`
-	Value *int `json:"value,omitempty"`
+	PinNumber *int `json:"pinNumber,omitempty"`
+	Value     *int `json:"value,omitempty"`
 }
 
 // ErrorResponse defines model for ErrorResponse.
@@ -73,10 +73,10 @@ type PinResponse struct {
 	AnalogWrite  bool   `json:"analogWrite"`
 	DigitalRead  bool   `json:"digitalRead"`
 	DigitalWrite bool   `json:"digitalWrite"`
-	Id           int    `json:"id"`
 	Max          int    `json:"max"`
 	Min          int    `json:"min"`
 	Mode         int    `json:"mode"`
+	PinNumber    int    `json:"pinNumber"`
 	Type         string `json:"type"`
 }
 
@@ -87,8 +87,8 @@ type Pong struct {
 
 // SetupPinRequest defines model for SetupPinRequest.
 type SetupPinRequest struct {
-	Mode SetupPinRequestMode `json:"mode"`
-	Pin  int                 `json:"pin"`
+	Mode      SetupPinRequestMode `json:"mode"`
+	PinNumber int                 `json:"pinNumber"`
 }
 
 // SetupPinRequestMode defines model for SetupPinRequest.Mode.
@@ -96,8 +96,8 @@ type SetupPinRequestMode string
 
 // SetupPinResponse defines model for SetupPinResponse.
 type SetupPinResponse struct {
-	Mode string `json:"mode"`
-	Pin  int    `json:"pin"`
+	Mode      string `json:"mode"`
+	PinNumber int    `json:"pinNumber"`
 }
 
 // PostAnalogWritePinJSONRequestBody defines body for PostAnalogWritePin for application/json ContentType.

@@ -14,7 +14,7 @@ export enum DigitalState {
 }
 
 export interface Pin {
-  id: number;
+  pinNumber: number;
   type: string;
   mode: string;
   min: number;

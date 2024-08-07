@@ -17,7 +17,7 @@ export function PinList() {
     <List dense={true}>
       {circuit.pins.map((pin) => (
         <>
-          <ListItem key={pin.id}>
+          <ListItem key={pin.pinNumber}>
             <ListItemIcon>
               {pin.type === PinType.Digital ? (
                 <PiWaveSquareLight size="20px" />
@@ -25,7 +25,7 @@ export function PinList() {
                 <PiWaveSineLight size="20px" />
               )}
             </ListItemIcon>
-            <ListItemText primary={pin.id} secondary={pin.type} />
+            <ListItemText primary={pin.pinNumber} secondary={pin.type} />
             <Switch
               checked={pin.mode === PinMode.Output}
               onChange={() => api.setupPin(pin)}

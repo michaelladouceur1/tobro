@@ -24,7 +24,7 @@ export interface DigitalWritePinRequest {
      * @type {number}
      * @memberof DigitalWritePinRequest
      */
-    pin: number;
+    pinNumber?: number;
     /**
      * 
      * @type {number}
@@ -37,7 +37,6 @@ export interface DigitalWritePinRequest {
  * Check if a given object implements the DigitalWritePinRequest interface.
  */
 export function instanceOfDigitalWritePinRequest(value: object): value is DigitalWritePinRequest {
-    if (!('pin' in value) || value['pin'] === undefined) return false;
     if (!('value' in value) || value['value'] === undefined) return false;
     return true;
 }
@@ -52,7 +51,7 @@ export function DigitalWritePinRequestFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'pin': json['pin'],
+        'pinNumber': json['pinNumber'] == null ? undefined : json['pinNumber'],
         'value': json['value'],
     };
 }
@@ -63,7 +62,7 @@ export function DigitalWritePinRequestToJSON(value?: DigitalWritePinRequest | nu
     }
     return {
         
-        'pin': value['pin'],
+        'pinNumber': value['pinNumber'],
         'value': value['value'],
     };
 }

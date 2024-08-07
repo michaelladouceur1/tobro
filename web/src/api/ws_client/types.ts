@@ -12,7 +12,7 @@ interface PortsMessage extends Ports {}
 
 
 interface PinStateMessage {
-  id: number;
+  pinNumber: number;
   state: number;
 }
 

@@ -32,10 +32,10 @@ export function useWsApi() {
         setPorts({ ports });
       },
       [MessageType.PinState]: (data) => {
-        const { id, state } = data;
+        const { pinNumber, state } = data;
         setCircuit((prev) => {
           const newCircuit = prev.pins.map((pin) => {
-            if (pin.id === id) {
+            if (pin.pinNumber === pinNumber) {
               return { ...pin, state };
             }
             return pin;

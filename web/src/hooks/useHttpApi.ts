@@ -27,9 +27,9 @@ export function useHttpApi() {
     },
     setupPin: async (pin: Pin) => {
       try {
-        const {id} = pin;
+        const {pinNumber} = pin;
         const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
-        const res = await api.setupPinPost({setupPinRequest: {pin: id, mode}});
+        const res = await api.setupPinPost({setupPinRequest: {pinNumber: pinNumber, mode}});
         setCircuitFromSetupPinResponse(setCircuit, res);
         return res;
       } catch (error) {
@@ -37,9 +37,9 @@ export function useHttpApi() {
       }
     },
     digitalWritePin: async (pin: Pin) => {
-      const {id} = pin;
+      const {pinNumber} = pin;
       const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
-      const res = await api.digitalWritePinPost({digitalWritePinRequest: {pin: id, value}});
+      const res = await api.digitalWritePinPost({digitalWritePinRequest: {pinNumber: pinNumber, value}});
       return res;
     }
   };

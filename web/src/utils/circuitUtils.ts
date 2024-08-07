@@ -5,7 +5,7 @@ import { Circuit, PinMode } from "../types";
 export function setCircuitFromSetupPinResponse(setCircuit: (update: SetStateAction<Circuit>) => void, data: SetupPinResponse) {
     setCircuit((prev) => {
         const newCircuit = prev.pins.map((pin) => {
-          if (pin.id === data.pin) {
+          if (pin.pinNumber === data.pinNumber) {
             return { ...pin, mode: data.mode  };
           }
           return pin;

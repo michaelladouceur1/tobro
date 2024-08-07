@@ -24,7 +24,7 @@ export interface SetupPinRequest {
      * @type {number}
      * @memberof SetupPinRequest
      */
-    pin: number;
+    pinNumber: number;
     /**
      * 
      * @type {string}
@@ -48,7 +48,7 @@ export type SetupPinRequestModeEnum = typeof SetupPinRequestModeEnum[keyof typeo
  * Check if a given object implements the SetupPinRequest interface.
  */
 export function instanceOfSetupPinRequest(value: object): value is SetupPinRequest {
-    if (!('pin' in value) || value['pin'] === undefined) return false;
+    if (!('pinNumber' in value) || value['pinNumber'] === undefined) return false;
     if (!('mode' in value) || value['mode'] === undefined) return false;
     return true;
 }
@@ -63,7 +63,7 @@ export function SetupPinRequestFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'pin': json['pin'],
+        'pinNumber': json['pinNumber'],
         'mode': json['mode'],
     };
 }
@@ -74,7 +74,7 @@ export function SetupPinRequestToJSON(value?: SetupPinRequest | null): any {
     }
     return {
         
-        'pin': value['pin'],
+        'pinNumber': value['pinNumber'],
         'mode': value['mode'],
     };
 }

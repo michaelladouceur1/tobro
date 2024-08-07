@@ -13,10 +13,14 @@ const (
 )
 
 type Circuit struct {
-	Pins []Pin
+	PortServer *PortServer
+	ID         int
+	Name       string
+	Board      SupportedBoards
+	Pins       []Pin
 }
 
-func NewCircuit(boardType SupportedBoards, ps *PortServer) *Circuit {
+func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) *Circuit {
 	switch boardType {
 	case ArduinoNano:
 		digitalPinConfig := PinConfig{
@@ -52,6 +56,10 @@ func NewCircuit(boardType SupportedBoards, ps *PortServer) *Circuit {
 		}
 
 		return &Circuit{
+			PortServer: ps,
+			ID:         id,
+			Name:       name,
+			Board:      ArduinoNano,
 			Pins: []Pin{
 				*NewPin(ps, 2, digitalPinConfig),
 				*NewPin(ps, 3, digitalPwmPinConfig),
@@ -88,9 +96,9 @@ func (b *Circuit) GetState() Circuit {
 	return *b
 }
 
-func (b *Circuit) GetPin(id int) (*Pin, error) {
+func (b *Circuit) GetPin(pinNumber int) (*Pin, error) {
 	for _, p := range b.Pins {
-		if p.ID == id {
+		if p.PinNumber == pinNumber {
 			return &p, nil
 		}
 	}
@@ -107,9 +115,9 @@ func (b *Circuit) GetPins() []*Pin {
 	return pins
 }
 
-func (b *Circuit) GetDigitalWritePin(id int) (DigitalWritePin, error) {
+func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
 	for _, p := range b.Pins {
-		if p.ID == id {
+		if p.PinNumber == pinNumber {
 			if p.DigitalWrite {
 				return &p, nil
 			}
@@ -122,9 +130,9 @@ func (b *Circuit) GetDigitalWritePin(id int) (DigitalWritePin, error) {
 	return nil, &PinNotFoundError{}
 }
 
-func (b *Circuit) GetAnalogWritePin(id int) (AnalogWritePin, error) {
+func (b *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
 	for _, p := range b.Pins {
-		if p.ID == id {
+		if p.PinNumber == pinNumber {
 			if p.AnalogWrite {
 				return &p, nil
 			}

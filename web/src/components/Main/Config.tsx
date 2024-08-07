@@ -147,8 +147,8 @@ export function Config() {
         {circuit.pins.map((pin) => {
           return (
             <>
-              <ListItem key={pin.id}>
-                <ListItemText primary={pin.id} />
+              <ListItem key={pin.pinNumber}>
+                <ListItemText primary={pin.pinNumber} />
                 <ListItemAvatar>
                   <Avatar
                     sx={{

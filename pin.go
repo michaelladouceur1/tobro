@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"tobro/db"
+)
 
 type PinType string
 type PinMode int
@@ -21,7 +24,7 @@ const (
 
 type Pin struct {
 	PortServer   *PortServer
-	ID           int
+	PinNumber    int
 	PinType      PinType
 	Min          int
 	Max          int
@@ -51,7 +54,7 @@ type AnalogWritePin interface {
 	SetAnalogState(state int) error
 }
 
-func NewPin(ps *PortServer, id int, config PinConfig) *Pin {
+func NewPin(ps *PortServer, pinNumber int, config PinConfig) *Pin {
 	var min, max int
 	if config.AnalogWrite || config.AnalogRead {
 		min, max = AnalogPinMin, AnalogPinMax
@@ -61,7 +64,7 @@ func NewPin(ps *PortServer, id int, config PinConfig) *Pin {
 
 	return &Pin{
 		PortServer:   ps,
-		ID:           id,
+		PinNumber:    pinNumber,
 		PinType:      config.PinType,
 		Min:          min,
 		Max:          max,
@@ -74,9 +77,13 @@ func NewPin(ps *PortServer, id int, config PinConfig) *Pin {
 	}
 }
 
+func (p *Pin) UpdateFromDBModel(model *db.PinDBModel) {
+	p.Mode = PinMode(model.Mode)
+}
+
 func (p *Pin) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"id":           p.ID,
+		"pinNumber":    p.PinNumber,
 		"type":         p.PinType,
 		"min":          p.Min,
 		"max":          p.Max,
@@ -99,7 +106,7 @@ func (p *Pin) SetMode(mode SetupPinRequestMode) error {
 		return &InvalidModeError{}
 	}
 
-	err := p.PortServer.SetupPin(p.ID, pinMode)
+	err := p.PortServer.SetupPin(p.PinNumber, pinMode)
 	if err != nil {
 		return err
 	}
@@ -114,7 +121,7 @@ func (p *Pin) High() error {
 		return &DigitalWriteNotSupportedError{}
 	}
 
-	err := p.PortServer.WriteDigitalPin(p.ID, DigitalPinHigh)
+	err := p.PortServer.WriteDigitalPin(p.PinNumber, DigitalPinHigh)
 	if err != nil {
 		return err
 	}
@@ -129,7 +136,7 @@ func (p *Pin) Low() error {
 		return &DigitalWriteNotSupportedError{}
 	}
 
-	err := p.PortServer.WriteDigitalPin(p.ID, DigitalPinLow)
+	err := p.PortServer.WriteDigitalPin(p.PinNumber, DigitalPinLow)
 	if err != nil {
 		return err
 	}
@@ -148,7 +155,7 @@ func (p *Pin) SetAnalogState(state int) error {
 		return &InvalidAnalogStateError{}
 	}
 
-	err := p.PortServer.WriteAnalogPin(p.ID, state)
+	err := p.PortServer.WriteAnalogPin(p.PinNumber, state)
 	if err != nil {
 		return err
 	}

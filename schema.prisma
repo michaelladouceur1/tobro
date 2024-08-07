@@ -24,9 +24,9 @@ model SketchDB {
 }
 
 model PinDB {
-    id        Int     @id @default(autoincrement())
-    pin       Int
-    mode      Int     @default(0) // 0 = INPUT, 1 = OUTPUT
+    id        Int       @id @default(autoincrement())
+    pinNumber Int
+    mode      Int       @default(0) // 0 = INPUT, 1 = OUTPUT
     circuit   CircuitDB @relation(fields: [circuitId], references: [id])
     circuitId Int
 }

@@ -51,11 +51,11 @@ func (m *Monitor) watchPinState() {
 				select {
 				case state, ok := <-pin.State:
 					if !ok {
-						log.Printf("Pin %d state channel is closed", pin.ID)
+						log.Printf("Pin %d state channel is closed", pin.PinNumber)
 						return
 					}
 
-					json, err := json.Marshal(createPinStateResponse(pin.ID, state))
+					json, err := json.Marshal(createPinStateResponse(pin.PinNumber, state))
 					if err != nil {
 						log.Fatal(err)
 						return

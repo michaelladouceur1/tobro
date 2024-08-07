@@ -24,7 +24,7 @@ export interface AnalogWritePinRequest {
      * @type {number}
      * @memberof AnalogWritePinRequest
      */
-    pin: number;
+    pinNumber: number;
     /**
      * 
      * @type {number}
@@ -37,7 +37,7 @@ export interface AnalogWritePinRequest {
  * Check if a given object implements the AnalogWritePinRequest interface.
  */
 export function instanceOfAnalogWritePinRequest(value: object): value is AnalogWritePinRequest {
-    if (!('pin' in value) || value['pin'] === undefined) return false;
+    if (!('pinNumber' in value) || value['pinNumber'] === undefined) return false;
     if (!('value' in value) || value['value'] === undefined) return false;
     return true;
 }
@@ -52,7 +52,7 @@ export function AnalogWritePinRequestFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'pin': json['pin'],
+        'pinNumber': json['pinNumber'],
         'value': json['value'],
     };
 }
@@ -63,7 +63,7 @@ export function AnalogWritePinRequestToJSON(value?: AnalogWritePinRequest | null
     }
     return {
         
-        'pin': value['pin'],
+        'pinNumber': value['pinNumber'],
         'value': value['value'],
     };
 }

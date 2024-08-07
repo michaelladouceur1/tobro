@@ -24,7 +24,7 @@ export interface AnalogWritePinResponse {
      * @type {number}
      * @memberof AnalogWritePinResponse
      */
-    pin?: number;
+    pinNumber?: number;
     /**
      * 
      * @type {number}
@@ -50,7 +50,7 @@ export function AnalogWritePinResponseFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'pin': json['pin'] == null ? undefined : json['pin'],
+        'pinNumber': json['pinNumber'] == null ? undefined : json['pinNumber'],
         'value': json['value'] == null ? undefined : json['value'],
     };
 }
@@ -61,7 +61,7 @@ export function AnalogWritePinResponseToJSON(value?: AnalogWritePinResponse | nu
     }
     return {
         
-        'pin': value['pin'],
+        'pinNumber': value['pinNumber'],
         'value': value['value'],
     };
 }

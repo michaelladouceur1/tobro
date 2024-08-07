@@ -42,7 +42,7 @@ func main() {
 	hub := NewWSHub()
 	go hub.Run()
 
-	circuit = NewCircuit(ArduinoNano, portServer)
+	circuit = NewCircuit(0, "Default Circuit", ArduinoNano, portServer)
 
 	monitor := NewMonitor(hub, portServer, circuit)
 	go monitor.Run()
