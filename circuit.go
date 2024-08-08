@@ -8,6 +8,10 @@ package main
 
 type SupportedBoards string
 
+var supportedBoards = []string{
+	string(ArduinoNano),
+}
+
 const (
 	ArduinoNano SupportedBoards = "arduino_nano"
 )

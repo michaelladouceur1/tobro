@@ -1,97 +1,69 @@
 import {
   Avatar,
   Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
   Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
+  MenuItem,
   Modal,
+  Select,
   SpeedDial,
   SpeedDialAction,
+  SpeedDialActionProps,
   SpeedDialIcon,
   Stack,
   styled,
   Switch,
+  TextField,
 } from "@mui/material";
 import {useAtomValue} from "jotai";
+import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import {FaPlus, FaRegFolder} from "react-icons/fa";
 import {PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
+import {boardsAtom} from "../../atoms/boardsAtom";
 import {circuitAtom} from "../../atoms/circuitAtom";
 import {useHttpApi} from "../../hooks/useHttpApi";
 import {theme} from "../../theme";
-import {DigitalState, Pin, PinMode, PinType} from "../../types";
-import {useState} from "react";
+import {PinMode, PinType} from "../../types";
 
 export function Config() {
   const api = useHttpApi();
   const circuit = useAtomValue(circuitAtom);
+  const boards = useAtomValue(boardsAtom);
 
   const [newCircuitModalOpen, setNewCircuitModalOpen] = useState(false);
   const [openCircuitModalOpen, setOpenCircuitModalOpen] = useState(false);
+  const [newCircuit, setNewCircuit] = useState({name: "", board: ""});
 
   const handleNewCircuitOpen = () => {
     setNewCircuitModalOpen(true);
     setOpenCircuitModalOpen(false);
   };
+
   const handleNewCircuitClose = () => {
     setNewCircuitModalOpen(false);
   };
-  //   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  //   useEffect(() => {
-  //     const canvas = canvasRef.current;
-  //     if (!canvas) {
-  //       return;
-  //     }
-  //     const ctx = canvas.getContext("2d");
-  //     if (!ctx) {
-  //       return;
-  //     }
+  const handleCreateCircuit = async () => {
+    // await api.createCircuit()
+  };
 
-  //     const img = new Image();
-  //     img.src = ArduinoNanoSVG;
-  //     img.onload = () => {
-  //       ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //       ctx.save();
-  //       ctx.translate(canvas.width / 2, canvas.height / 2);
-  //       ctx.rotate((90 * Math.PI) / 180); // Rotate 90 degrees
-  //       ctx.drawImage(img, -img.width / 2, -img.height / 2);
-  //       ctx.restore();
+  const updateCircuitField = useCallback((field: string, value: string) => {
+    setNewCircuit({...newCircuit, [field]: value});
+  }, []);
 
-  //       // Define pin positions (example positions, adjust as needed)
-  //       const pinPositions = [
-  //         {x: -img.width / 2 + 10, y: -img.height / 2 + 20}, // Pin 1
-  //         {x: -img.width / 2 + 10, y: -img.height / 2 + 40}, // Pin 2
-  //         // Add more pins as needed
-  //       ];
-
-  //       // Draw lines from pins to the edge of the canvas
-  //       pinPositions.forEach((pin) => {
-  //         ctx.beginPath();
-  //         ctx.moveTo(canvas.width / 2 + pin.x, canvas.height / 2 + pin.y);
-  //         ctx.lineTo(canvas.width, canvas.height / 2 + pin.y); // Line to the right edge
-  //         ctx.strokeStyle = "red"; // Line color
-  //         ctx.lineWidth = 2; // Line width
-  //         ctx.stroke();
-  //       });
-  //     };
-  //   }, []);
-
-  // const handleSetupPin = async (pin: Pin) => {
-  //   const {id} = pin;
-  //   const mode = pin.mode === PinMode.Output ? PinMode.Input : PinMode.Output;
-  //   const res = await api.setupPinPost({setupPinRequest: {pin: id, mode}});
-  //   console.log(res);
-  // };
-
-  // const handleDigitalWrite = async (pin: Pin) => {
-  //   const {id} = pin;
-  //   const value = pin.state === pin.max ? DigitalState.Low : DigitalState.High;
-  //   await api.digitalWritePinPost({
-  //     digitalWritePinRequest: {pin: id, value},
-  //   });
-  // };
+  useEffect(() => {
+    console.log(circuit);
+  }, [circuit]);
 
   const Config = styled(Box)({
     width: "100%",
@@ -126,22 +98,58 @@ export function Config() {
   return (
     <Config sx={{position: "relative"}}>
       <Modal open={newCircuitModalOpen} onClose={handleNewCircuitClose}>
-        <Box
+        <Card
           sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "80%",
-            bgcolor: "background.paper",
+            width: "500px",
+            height: "fit-content",
             border: "2px solid #000",
             boxShadow: 24,
-            p: 4,
           }}
         >
-          <h2>New Circuit</h2>
-          <p>Content</p>
-        </Box>
+          <CardHeader
+            title="New Circuit"
+            action={
+              <IconButton color="primary" onClick={handleNewCircuitClose}>
+                <FaPlus />
+              </IconButton>
+            }
+            sx={{borderBottom: "1px solid #000"}}
+          />
+          <CardContent>
+            <FormControl
+              fullWidth
+              sx={{display: "flex", flexDirection: "column", rowGap: "10px"}}
+            >
+              <InputLabel required id="board-select-label">
+                Board
+              </InputLabel>
+              <Select
+                labelId="board-select-label"
+                label="Board"
+                fullWidth
+                value={newCircuit.board}
+                onChange={(e) => updateCircuitField("board", e.target.value)}
+              >
+                {boards.map((board) => (
+                  <MenuItem key={board} value={board}>
+                    {board}
+                  </MenuItem>
+                ))}
+              </Select>
+              <TextField
+                required
+                label="Circuit Name"
+                fullWidth
+                value={newCircuit.name}
+                onChange={(e) => updateCircuitField("name", e.target.value)}
+              />
+            </FormControl>
+          </CardContent>
+        </Card>
       </Modal>
       <List dense={true}>
         {circuit.pins.map((pin) => {
@@ -184,7 +192,6 @@ export function Config() {
           );
         })}
       </List>
-      {/* <SVG src={ArduinoNanoSVG} alt="Arduino Nano" /> */}
       <SpeedDial
         ariaLabel="Speedial"
         sx={{position: "absolute", right: "20px", top: "20px"}}

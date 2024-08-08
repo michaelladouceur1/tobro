@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AnalogWritePinRequest,
   AnalogWritePinResponse,
+  BoardsResponse,
   CircuitResponse,
   ConnectRequest,
   ConnectResponse,
@@ -33,6 +34,8 @@ import {
     AnalogWritePinRequestToJSON,
     AnalogWritePinResponseFromJSON,
     AnalogWritePinResponseToJSON,
+    BoardsResponseFromJSON,
+    BoardsResponseToJSON,
     CircuitResponseFromJSON,
     CircuitResponseToJSON,
     ConnectRequestFromJSON,
@@ -104,6 +107,30 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async analogWritePinPost(requestParameters: AnalogWritePinPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AnalogWritePinResponse> {
         const response = await this.analogWritePinPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async boardsGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BoardsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/boards`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BoardsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async boardsGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BoardsResponse> {
+        const response = await this.boardsGetRaw(initOverrides);
         return await response.value();
     }
 

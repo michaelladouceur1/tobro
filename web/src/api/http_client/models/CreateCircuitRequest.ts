@@ -30,18 +30,8 @@ export interface CreateCircuitRequest {
      * @type {string}
      * @memberof CreateCircuitRequest
      */
-    board: CreateCircuitRequestBoardEnum;
+    board: string;
 }
-
-
-/**
- * @export
- */
-export const CreateCircuitRequestBoardEnum = {
-    ArduinoNano: 'arduino_nano'
-} as const;
-export type CreateCircuitRequestBoardEnum = typeof CreateCircuitRequestBoardEnum[keyof typeof CreateCircuitRequestBoardEnum];
-
 
 /**
  * Check if a given object implements the CreateCircuitRequest interface.

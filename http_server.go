@@ -55,6 +55,10 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
 
+func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(BoardsResponse{Boards: supportedBoards})
+}
+
 func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
 	pinResponses := pinResponseFromPins(circuit.Pins)
 	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
@@ -67,13 +71,7 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	boardType, ok := req.Board.(SupportedBoards)
-	if !ok {
-		http.Error(w, "invalid board type", http.StatusBadRequest)
-		return
-	}
-
-	circuit, err := dal.CreateCircuit(*NewCircuit(0, req.Name, boardType, portServer))
+	circuit, err := dal.CreateCircuit(*NewCircuit(0, req.Name, SupportedBoards(req.Board), portServer))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

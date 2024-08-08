@@ -3,6 +3,7 @@ apis/index.ts
 index.ts
 models/AnalogWritePinRequest.ts
 models/AnalogWritePinResponse.ts
+models/BoardsResponse.ts
 models/CircuitResponse.ts
 models/ConnectRequest.ts
 models/ConnectResponse.ts

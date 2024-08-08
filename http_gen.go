@@ -28,6 +28,11 @@ type AnalogWritePinResponse struct {
 	Value     *int `json:"value,omitempty"`
 }
 
+// BoardsResponse defines model for BoardsResponse.
+type BoardsResponse struct {
+	Boards []string `json:"boards"`
+}
+
 // CircuitResponse defines model for CircuitResponse.
 type CircuitResponse struct {
 	Pins []PinResponse `json:"pins"`
@@ -46,8 +51,8 @@ type ConnectResponse struct {
 
 // CreateCircuitRequest defines model for CreateCircuitRequest.
 type CreateCircuitRequest struct {
-	Board interface{} `json:"board"`
-	Name  string      `json:"name"`
+	Board string `json:"board"`
+	Name  string `json:"name"`
 }
 
 // DigitalWritePinRequest defines model for DigitalWritePinRequest.
@@ -121,6 +126,9 @@ type ServerInterface interface {
 	// (POST /analog_write_pin)
 	PostAnalogWritePin(w http.ResponseWriter, r *http.Request)
 
+	// (GET /boards)
+	GetBoards(w http.ResponseWriter, r *http.Request)
+
 	// (GET /circuit)
 	GetCircuit(w http.ResponseWriter, r *http.Request)
 
@@ -155,6 +163,21 @@ func (siw *ServerInterfaceWrapper) PostAnalogWritePin(w http.ResponseWriter, r *
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostAnalogWritePin(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetBoards operation middleware
+func (siw *ServerInterfaceWrapper) GetBoards(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetBoards(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -368,6 +391,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	}
 
 	r.HandleFunc(options.BaseURL+"/analog_write_pin", wrapper.PostAnalogWritePin).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/boards", wrapper.GetBoards).Methods("GET")
 
 	r.HandleFunc(options.BaseURL+"/circuit", wrapper.GetCircuit).Methods("GET")
 
