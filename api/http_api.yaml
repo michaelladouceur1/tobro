@@ -33,6 +33,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /boards:
+    get:
+      responses:
+        '200':
+          description: Board get response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardsResponse'
+        '400':
+          description: Board get error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /circuit:
     get:
       responses:
@@ -176,8 +191,7 @@ components:
           type: string
           example: "my_circuit"
         board:
-          enum:
-            - "arduino_nano"
+          type: string
           example: "arduino_nano"
     CreateCircuitResponse:
       type: object
@@ -306,5 +320,14 @@ components:
         pins:
           type: array
           items:
-            $ref: '#/components/schemas/PinResponse'
-          
+            $ref: '#/components/schemas/PinResponse'  
+    BoardsResponse:
+      type: object
+      required:
+        - boards
+      properties:
+        boards:
+          type: array
+          items:
+            type: string
+          example: ["arduino_nano"]

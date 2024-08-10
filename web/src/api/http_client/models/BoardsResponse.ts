@@ -16,30 +16,30 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface BoardResponse
+ * @interface BoardsResponse
  */
-export interface BoardResponse {
+export interface BoardsResponse {
     /**
      * 
      * @type {Array<string>}
-     * @memberof BoardResponse
+     * @memberof BoardsResponse
      */
     boards: Array<string>;
 }
 
 /**
- * Check if a given object implements the BoardResponse interface.
+ * Check if a given object implements the BoardsResponse interface.
  */
-export function instanceOfBoardResponse(value: object): value is BoardResponse {
+export function instanceOfBoardsResponse(value: object): value is BoardsResponse {
     if (!('boards' in value) || value['boards'] === undefined) return false;
     return true;
 }
 
-export function BoardResponseFromJSON(json: any): BoardResponse {
-    return BoardResponseFromJSONTyped(json, false);
+export function BoardsResponseFromJSON(json: any): BoardsResponse {
+    return BoardsResponseFromJSONTyped(json, false);
 }
 
-export function BoardResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BoardResponse {
+export function BoardsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BoardsResponse {
     if (json == null) {
         return json;
     }
@@ -49,7 +49,7 @@ export function BoardResponseFromJSONTyped(json: any, ignoreDiscriminator: boole
     };
 }
 
-export function BoardResponseToJSON(value?: BoardResponse | null): any {
+export function BoardsResponseToJSON(value?: BoardsResponse | null): any {
     if (value == null) {
         return value;
     }

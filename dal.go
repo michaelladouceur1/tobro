@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"tobro/db"
 )
 
@@ -47,7 +48,7 @@ func (d *DAL) Disconnect() {
 
 func (d *DAL) GetCircuitByID(id int) (*Circuit, error) {
 	circuit, err := d.client.CircuitDB.FindUnique(
-		db.CircuitDB.ID.Equals(id)).Exec(d.ctx)
+		db.CircuitDB.ID.Equals(id)).With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +58,10 @@ func (d *DAL) GetCircuitByID(id int) (*Circuit, error) {
 
 func (d *DAL) CreateCircuit(circuit Circuit) (*Circuit, error) {
 	newCircuit, err := d.client.CircuitDB.CreateOne(
-		db.CircuitDB.Name.Equals(circuit.Name),
+		db.CircuitDB.Name.Set(circuit.Name),
 		db.CircuitDB.Board.Set(string(circuit.Board))).Exec(d.ctx)
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
 
@@ -80,6 +82,7 @@ func (d *DAL) AddPins(circuitID int, pins []Pin) ([]*db.PinDBModel, error) {
 	for _, pin := range pins {
 		pinModel, err := d.AddPin(circuitID, pin)
 		if err != nil {
+			log.Print(err)
 			return nil, err
 		}
 		pinModels = append(pinModels, pinModel)

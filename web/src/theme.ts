@@ -20,6 +20,13 @@ export const theme = createTheme({
       },
     },
     components: {
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            color: "#85827E",
+          },
+        },
+      },
       MuiCard: {
         styleOverrides: {
           root: {
