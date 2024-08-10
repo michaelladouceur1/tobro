@@ -35,6 +35,125 @@ import {useHttpApi} from "../../hooks/useHttpApi";
 import {theme} from "../../theme";
 import {PinMode, PinType} from "../../types";
 
+function AddCircuitModal({
+  open,
+  close,
+  boards,
+}: {
+  open: boolean;
+  close: () => void;
+  boards: string[];
+}) {
+  const api = useHttpApi();
+  const [newCircuit, setNewCircuit] = useState({name: "", board: ""});
+
+  const updateCircuitField = (field: string, value: string) => {
+    setNewCircuit((prev) => ({...prev, [field]: value}));
+  };
+
+  const handleAdd = async () => {
+    console.log("Adding new circuit");
+    const res = await api.createCircuit(newCircuit.name, newCircuit.board);
+    console.log(res);
+    close();
+  };
+
+  return (
+    <Modal open={open} onClose={close}>
+      <Card
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "500px",
+          height: "fit-content",
+          border: "2px solid #000",
+          boxShadow: 24,
+        }}
+      >
+        <CardHeader
+          title="New Circuit"
+          action={
+            <IconButton color="primary" onClick={handleAdd}>
+              <FaPlus />
+            </IconButton>
+          }
+          sx={{borderBottom: "1px solid #000"}}
+        />
+        <CardContent>
+          <FormControl
+            fullWidth
+            sx={{display: "flex", flexDirection: "column", rowGap: "10px"}}
+          >
+            <InputLabel required id="board-select-label">
+              Board
+            </InputLabel>
+            <Select
+              labelId="board-select-label"
+              label="Board"
+              fullWidth
+              value={newCircuit.board}
+              onChange={(e) => updateCircuitField("board", e.target.value)}
+            >
+              {boards.map((board) => (
+                <MenuItem key={board} value={board}>
+                  {board}
+                </MenuItem>
+              ))}
+            </Select>
+            <TextField
+              required
+              label="Circuit Name"
+              fullWidth
+              value={newCircuit.name}
+              onChange={(e) => updateCircuitField("name", e.target.value)}
+            />
+          </FormControl>
+        </CardContent>
+      </Card>
+    </Modal>
+  );
+}
+
+function ConfigSpeedDial({
+  handleNewCircuitOpen,
+}: {
+  handleNewCircuitOpen: () => void;
+}) {
+  const actions = [
+    {
+      icon: <FaPlus size="50%" />,
+      name: "New Circuit",
+      onclick: handleNewCircuitOpen,
+    },
+    {
+      icon: <FaRegFolder size="50%" />,
+      name: "Open Circuit",
+      onclick: () => console.log("Open Circuit"),
+    },
+  ];
+
+  return (
+    <SpeedDial
+      ariaLabel="Speedial"
+      sx={{position: "absolute", right: "20px", top: "20px"}}
+      transitionDuration={0}
+      icon={<SpeedDialIcon />}
+      direction="left"
+    >
+      {actions.map((action) => (
+        <SpeedDialAction
+          key={action.name}
+          icon={action.icon}
+          tooltipTitle={action.name}
+          onClick={action.onclick}
+        />
+      ))}
+    </SpeedDial>
+  );
+}
+
 export function Config() {
   const api = useHttpApi();
   const circuit = useAtomValue(circuitAtom);
@@ -42,7 +161,6 @@ export function Config() {
 
   const [newCircuitModalOpen, setNewCircuitModalOpen] = useState(false);
   const [openCircuitModalOpen, setOpenCircuitModalOpen] = useState(false);
-  const [newCircuit, setNewCircuit] = useState({name: "", board: ""});
 
   const handleNewCircuitOpen = () => {
     setNewCircuitModalOpen(true);
@@ -56,10 +174,6 @@ export function Config() {
   const handleCreateCircuit = async () => {
     // await api.createCircuit()
   };
-
-  const updateCircuitField = useCallback((field: string, value: string) => {
-    setNewCircuit({...newCircuit, [field]: value});
-  }, []);
 
   useEffect(() => {
     console.log(circuit);
@@ -82,131 +196,60 @@ export function Config() {
     transform: "rotate(90deg)",
   });
 
-  const actions = [
-    {
-      icon: <FaPlus size="50%" />,
-      name: "New Circuit",
-      onclick: handleNewCircuitOpen,
-    },
-    {
-      icon: <FaRegFolder size="50%" />,
-      name: "Open Circuit",
-      onclick: () => console.log("Open Circuit"),
-    },
-  ];
-
   return (
-    <Config sx={{position: "relative"}}>
-      <Modal open={newCircuitModalOpen} onClose={handleNewCircuitClose}>
-        <Card
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "500px",
-            height: "fit-content",
-            border: "2px solid #000",
-            boxShadow: 24,
-          }}
-        >
-          <CardHeader
-            title="New Circuit"
-            action={
-              <IconButton color="primary" onClick={handleNewCircuitClose}>
-                <FaPlus />
-              </IconButton>
-            }
-            sx={{borderBottom: "1px solid #000"}}
-          />
-          <CardContent>
-            <FormControl
-              fullWidth
-              sx={{display: "flex", flexDirection: "column", rowGap: "10px"}}
-            >
-              <InputLabel required id="board-select-label">
-                Board
-              </InputLabel>
-              <Select
-                labelId="board-select-label"
-                label="Board"
-                fullWidth
-                value={newCircuit.board}
-                onChange={(e) => updateCircuitField("board", e.target.value)}
-              >
-                {boards.map((board) => (
-                  <MenuItem key={board} value={board}>
-                    {board}
-                  </MenuItem>
-                ))}
-              </Select>
-              <TextField
-                required
-                label="Circuit Name"
-                fullWidth
-                value={newCircuit.name}
-                onChange={(e) => updateCircuitField("name", e.target.value)}
-              />
-            </FormControl>
-          </CardContent>
-        </Card>
-      </Modal>
-      <List dense={true}>
-        {circuit.pins.map((pin) => {
-          return (
-            <>
-              <ListItem key={pin.pinNumber}>
-                <ListItemText primary={pin.pinNumber} />
-                <ListItemAvatar>
-                  <Avatar
-                    sx={{
-                      cursor: "pointer",
-                      width: "28px",
-                      height: "28px",
-                      bgcolor:
-                        pin.state === pin.max
-                          ? theme.palette.primary.main
-                          : null,
-                    }}
-                    onClick={() => api.digitalWritePin(pin)}
-                  >
-                    {pin.type === PinType.Digital ? (
-                      <PiWaveSineLight size="20px" />
-                    ) : (
-                      <PiWaveSquareLight size="20px" />
-                    )}
-                  </Avatar>
-                </ListItemAvatar>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <p>I</p>
-                  <Switch
-                    size="small"
-                    checked={pin.mode === PinMode.Output}
-                    onChange={() => api.setupPin(pin)}
-                  />
-                  <p>O</p>
-                </Stack>
-              </ListItem>
-              <Divider />
-            </>
-          );
-        })}
-      </List>
-      <SpeedDial
-        ariaLabel="Speedial"
-        sx={{position: "absolute", right: "20px", top: "20px"}}
-        icon={<SpeedDialIcon />}
-        direction="left"
-      >
-        {actions.map((action) => (
-          <SpeedDialAction
-            key={action.name}
-            icon={action.icon}
-            tooltipTitle={action.name}
-            onClick={action.onclick}
-          />
-        ))}
-      </SpeedDial>
-    </Config>
+    <>
+      <AddCircuitModal
+        open={newCircuitModalOpen}
+        close={handleNewCircuitClose}
+        boards={boards}
+      />
+      <Config sx={{position: "relative"}}>
+        <List dense={true}>
+          {circuit.pins.map((pin) => {
+            return (
+              <>
+                <ListItem key={pin.pinNumber}>
+                  <ListItemText primary={pin.pinNumber} />
+                  <ListItemAvatar>
+                    <Avatar
+                      sx={{
+                        cursor: "pointer",
+                        width: "28px",
+                        height: "28px",
+                        bgcolor:
+                          pin.state === pin.max
+                            ? theme.palette.primary.main
+                            : null,
+                      }}
+                      onClick={() => api.digitalWritePin(pin)}
+                    >
+                      {pin.type === PinType.Digital ? (
+                        <PiWaveSineLight size="20px" />
+                      ) : (
+                        <PiWaveSquareLight size="20px" />
+                      )}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <p>I</p>
+                    <Switch
+                      size="small"
+                      checked={pin.mode === PinMode.Output}
+                      onChange={() => api.setupPin(pin)}
+                    />
+                    <p>O</p>
+                  </Stack>
+                </ListItem>
+                <Divider />
+              </>
+            );
+          })}
+        </List>
+        <ConfigSpeedDial handleNewCircuitOpen={handleNewCircuitOpen} />
+        {/* <Button onClick={handleNewCircuitOpen}>
+          <FaPlus />
+        </Button> */}
+      </Config>
+    </>
   );
 }

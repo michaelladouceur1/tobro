@@ -33,7 +33,9 @@ export function useHttpApi() {
       return res;
     },
     createCircuit: async (name: string, board: string) => {
-      return api.circuitPost({createCircuitRequest: {name, board}});
+      const res = await api.circuitPost({createCircuitRequest: {name, board}});
+      console.log("Created circuit", res);
+      setCircuitFromCircuitResponse(setCircuit, res);
     },
     getBoards: async () => {
       const res = await api.boardsGet();
