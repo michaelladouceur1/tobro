@@ -187,6 +187,10 @@ func (p *Pin) SetDigitalState(state int) error {
 	return nil
 }
 
+func (p *Pin) GetPinState() int {
+	return <-p.State
+}
+
 // func (p *DigitalPin) PWM(dutyCycle int, period int, duration int) error {
 // 	if !p.PWM {
 // 		return &PWMNotSupportedError{}

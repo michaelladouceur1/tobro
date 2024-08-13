@@ -60,14 +60,14 @@ type CreateCircuitRequest struct {
 
 // DigitalWritePinRequest defines model for DigitalWritePinRequest.
 type DigitalWritePinRequest struct {
-	PinNumber *int `json:"pinNumber,omitempty"`
-	Value     int  `json:"value"`
+	PinNumber int `json:"pinNumber"`
+	Value     int `json:"value"`
 }
 
 // DigitalWritePinResponse defines model for DigitalWritePinResponse.
 type DigitalWritePinResponse struct {
-	PinNumber *int `json:"pinNumber,omitempty"`
-	Value     *int `json:"value,omitempty"`
+	PinNumber int `json:"pinNumber"`
+	Value     int `json:"value"`
 }
 
 // ErrorResponse defines model for ErrorResponse.

@@ -262,7 +262,7 @@ components:
     DigitalWritePinRequest:
       type: object
       required:
-        - pin
+        - pinNumber
         - value
       properties:
         pinNumber:
@@ -274,6 +274,9 @@ components:
           maximum: 1
     DigitalWritePinResponse:
       type: object
+      required:
+        - pinNumber
+        - value
       properties:
         pinNumber:
           type: integer

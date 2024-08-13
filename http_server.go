@@ -44,6 +44,13 @@ func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
 	}
 }
 
+func digitalWritePinResponseFromPin(pin *Pin) DigitalWritePinResponse {
+	return DigitalWritePinResponse{
+		PinNumber: pin.PinNumber,
+		Value:     pin.GetPinState(),
+	}
+}
+
 func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
 }
@@ -152,10 +159,6 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, pin := range circuit.Pins {
-		log.Print(pin.Mode)
-	}
-
 	json.NewEncoder(w).Encode(SetupPinResponse{Mode: string(req.Mode), PinNumber: req.PinNumber})
 }
 
@@ -166,7 +169,7 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pin, err := circuit.GetDigitalWritePin(*req.PinNumber)
+	pin, err := circuit.GetDigitalWritePin(req.PinNumber)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -178,7 +181,7 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	json.NewEncoder(w).Encode(DigitalWritePinResponse{PinNumber: req.PinNumber, Value: &req.Value})
+	json.NewEncoder(w).Encode(DigitalWritePinResponse{PinNumber: req.PinNumber, Value: req.Value})
 }
 
 func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) {

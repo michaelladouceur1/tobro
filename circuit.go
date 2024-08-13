@@ -110,9 +110,9 @@ func (b *Circuit) GetState() Circuit {
 }
 
 func (b *Circuit) GetPin(pinNumber int) (*Pin, error) {
-	for _, p := range b.Pins {
+	for i, p := range b.Pins {
 		if p.PinNumber == pinNumber {
-			return &p, nil
+			return &b.Pins[i], nil
 		}
 	}
 
@@ -129,10 +129,10 @@ func (b *Circuit) GetPins() []*Pin {
 }
 
 func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
-	for _, p := range b.Pins {
+	for i, p := range b.Pins {
 		if p.PinNumber == pinNumber {
 			if p.DigitalWrite {
-				return &p, nil
+				return &b.Pins[i], nil
 			}
 
 			return nil, &PinNotDigitalError{}
@@ -144,10 +144,10 @@ func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
 }
 
 func (b *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
-	for _, p := range b.Pins {
+	for i, p := range b.Pins {
 		if p.PinNumber == pinNumber {
 			if p.AnalogWrite {
-				return &p, nil
+				return &b.Pins[i], nil
 			}
 
 			return nil, &PinNotAnalogError{}
