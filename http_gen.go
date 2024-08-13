@@ -35,7 +35,10 @@ type BoardsResponse struct {
 
 // CircuitResponse defines model for CircuitResponse.
 type CircuitResponse struct {
-	Pins []PinResponse `json:"pins"`
+	Board string        `json:"board"`
+	Id    int           `json:"id"`
+	Name  string        `json:"name"`
+	Pins  []PinResponse `json:"pins"`
 }
 
 // ConnectRequest defines model for ConnectRequest.
@@ -90,6 +93,11 @@ type Pong struct {
 	Ping string `json:"ping"`
 }
 
+// SaveCircuitRequest defines model for SaveCircuitRequest.
+type SaveCircuitRequest struct {
+	Id int `json:"id"`
+}
+
 // SetupPinRequest defines model for SetupPinRequest.
 type SetupPinRequest struct {
 	Mode      SetupPinRequestMode `json:"mode"`
@@ -117,6 +125,9 @@ type PostConnectJSONRequestBody = ConnectRequest
 // PostDigitalWritePinJSONRequestBody defines body for PostDigitalWritePin for application/json ContentType.
 type PostDigitalWritePinJSONRequestBody = DigitalWritePinRequest
 
+// PostSaveCircuitJSONRequestBody defines body for PostSaveCircuit for application/json ContentType.
+type PostSaveCircuitJSONRequestBody = SaveCircuitRequest
+
 // PostSetupPinJSONRequestBody defines body for PostSetupPin for application/json ContentType.
 type PostSetupPinJSONRequestBody = SetupPinRequest
 
@@ -143,6 +154,9 @@ type ServerInterface interface {
 
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
+
+	// (POST /save_circuit)
+	PostSaveCircuit(w http.ResponseWriter, r *http.Request)
 
 	// (POST /setup_pin)
 	PostSetupPin(w http.ResponseWriter, r *http.Request)
@@ -253,6 +267,21 @@ func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Reques
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetPing(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostSaveCircuit operation middleware
+func (siw *ServerInterfaceWrapper) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostSaveCircuit(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -403,6 +432,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	r.HandleFunc(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/ping", wrapper.GetPing).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/save_circuit", wrapper.PostSaveCircuit).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/setup_pin", wrapper.PostSetupPin).Methods("POST")
 

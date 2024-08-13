@@ -14,6 +14,7 @@ models/DigitalWritePinResponse.ts
 models/ErrorResponse.ts
 models/PinResponse.ts
 models/Pong.ts
+models/SaveCircuitRequest.ts
 models/SetupPinRequest.ts
 models/SetupPinResponse.ts
 models/index.ts

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -31,6 +32,16 @@ func pinResponseFromPins(pins []Pin) []PinResponse {
 		pinResponses = append(pinResponses, pinResponseFromPin(pin))
 	}
 	return pinResponses
+}
+
+func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
+	pinResponses := pinResponseFromPins(circuit.Pins)
+	return CircuitResponse{
+		Id:    circuit.ID,
+		Name:  circuit.Name,
+		Board: string(circuit.Board),
+		Pins:  pinResponses,
+	}
 }
 
 func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
@@ -71,14 +82,55 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	circuit, err := dal.CreateCircuit(*NewCircuit(0, req.Name, SupportedBoards(req.Board), portServer))
+	newCircuit, err := dal.CreateCircuit(*NewCircuit(0, req.Name, SupportedBoards(req.Board), portServer))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	pinResponses := pinResponseFromPins(circuit.Pins)
-	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
+	circuit.UpdateCircuit(newCircuit)
+
+	log.Print(circuit.ID)
+	log.Print(circuit.Name)
+	log.Print(circuit.Board)
+
+	json.NewEncoder(w).Encode(circuitResponseFromCircuit(circuit))
+}
+
+func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
+	var req SaveCircuitRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Print(req.Id)
+	log.Print(circuit.ID)
+	log.Print(circuit.Name)
+	log.Print(circuit.Board)
+
+	if req.Id != circuit.ID {
+		http.Error(w, "invalid circuit id", http.StatusBadRequest)
+		return
+	}
+
+	for _, pin := range circuit.Pins {
+		log.Print(pin.Mode)
+	}
+
+	newCircuit, err := dal.SaveCircuit(*circuit)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// for _, pin := range newCircuit.Pins {
+	// 	log.Print(pin.Mode)
+	// }
+
+	circuit.UpdateCircuit(newCircuit)
+
+	json.NewEncoder(w).Encode(circuitResponseFromCircuit(circuit))
 }
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
@@ -98,6 +150,10 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	for _, pin := range circuit.Pins {
+		log.Print(pin.Mode)
 	}
 
 	json.NewEncoder(w).Encode(SetupPinResponse{Mode: string(req.Mode), PinNumber: req.PinNumber})

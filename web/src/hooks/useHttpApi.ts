@@ -37,6 +37,11 @@ export function useHttpApi() {
       console.log("Created circuit", res);
       setCircuitFromCircuitResponse(setCircuit, res);
     },
+    saveCircuit: async (id: number) => {
+      const res = await api.saveCircuitPost({saveCircuitRequest: {id}});
+      console.log("Saved circuit", res);
+      setCircuitFromCircuitResponse(setCircuit, res);
+    },
     getBoards: async () => {
       const res = await api.boardsGet();
       return res;

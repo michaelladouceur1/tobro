@@ -83,6 +83,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /save_circuit:
+    post:
+      requestBody:
+        description: Save a circuit
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveCircuitRequest'
+      responses:
+        '200':
+          description: Save circuit post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CircuitResponse'
+        '400':
+          description: Save circuit post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /setup_pin:
     post:
       requestBody:
@@ -205,6 +226,14 @@ components:
         timestamp:
           type: integer
           example: 1612345678
+    SaveCircuitRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          example: 1234
     SetupPinRequest:
       type: object
       required:
@@ -315,8 +344,20 @@ components:
     CircuitResponse:
       type: object
       required:
+        - id
+        - name
+        - board
         - pins
       properties:
+        id:
+          type: integer
+          example: 1234
+        name:
+          type: string
+          example: "my_circuit"
+        board:
+          type: string
+          example: "arduino_nano"
         pins:
           type: array
           items:

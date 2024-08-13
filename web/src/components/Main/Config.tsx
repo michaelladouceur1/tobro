@@ -27,7 +27,7 @@ import {
 } from "@mui/material";
 import {useAtomValue} from "jotai";
 import {memo, useCallback, useEffect, useMemo, useState} from "react";
-import {FaPlus, FaRegFolder} from "react-icons/fa";
+import {FaPlus, FaRegFolder, FaSave} from "react-icons/fa";
 import {PiWaveSineLight, PiWaveSquareLight} from "react-icons/pi";
 import {boardsAtom} from "../../atoms/boardsAtom";
 import {circuitAtom} from "../../atoms/circuitAtom";
@@ -121,11 +121,19 @@ function ConfigSpeedDial({
 }: {
   handleNewCircuitOpen: () => void;
 }) {
+  const api = useHttpApi();
+  const circuit = useAtomValue(circuitAtom);
+
   const actions = [
     {
       icon: <FaPlus size="50%" />,
       name: "New Circuit",
       onclick: handleNewCircuitOpen,
+    },
+    {
+      icon: <FaSave size="50%" />,
+      name: "Save Circuit",
+      onclick: () => api.saveCircuit(circuit.id),
     },
     {
       icon: <FaRegFolder size="50%" />,

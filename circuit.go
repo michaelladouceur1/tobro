@@ -92,6 +92,15 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 	}
 }
 
+func (b *Circuit) UpdateCircuit(updateCircuit *Circuit) error {
+	b.ID = updateCircuit.ID
+	b.Name = updateCircuit.Name
+	b.Board = updateCircuit.Board
+	b.Pins = updateCircuit.Pins
+
+	return nil
+}
+
 func (b *Circuit) PinCount() int {
 	return len(b.Pins)
 }

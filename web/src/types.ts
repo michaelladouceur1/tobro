@@ -27,6 +27,9 @@ export interface Pin {
 }
 
 export interface Circuit {
+  id: number;
+  name: string;
+  board: string;
   pins: Pin[];
 }
 

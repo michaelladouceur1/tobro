@@ -26,6 +26,7 @@ import type {
   DigitalWritePinResponse,
   ErrorResponse,
   Pong,
+  SaveCircuitRequest,
   SetupPinRequest,
   SetupPinResponse,
 } from '../models/index';
@@ -52,6 +53,8 @@ import {
     ErrorResponseToJSON,
     PongFromJSON,
     PongToJSON,
+    SaveCircuitRequestFromJSON,
+    SaveCircuitRequestToJSON,
     SetupPinRequestFromJSON,
     SetupPinRequestToJSON,
     SetupPinResponseFromJSON,
@@ -72,6 +75,10 @@ export interface ConnectPostRequest {
 
 export interface DigitalWritePinPostRequest {
     digitalWritePinRequest?: DigitalWritePinRequest;
+}
+
+export interface SaveCircuitPostRequest {
+    saveCircuitRequest?: SaveCircuitRequest;
 }
 
 export interface SetupPinPostRequest {
@@ -260,6 +267,33 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async pingGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Pong> {
         const response = await this.pingGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async saveCircuitPostRaw(requestParameters: SaveCircuitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CircuitResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/save_circuit`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SaveCircuitRequestToJSON(requestParameters['saveCircuitRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CircuitResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async saveCircuitPost(requestParameters: SaveCircuitPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CircuitResponse> {
+        const response = await this.saveCircuitPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

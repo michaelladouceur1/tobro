@@ -70,6 +70,29 @@ func (d *DAL) CreateCircuit(circuit Circuit) (*Circuit, error) {
 	return d.GetCircuitByID(newCircuit.ID)
 }
 
+func (d *DAL) SaveCircuit(circuit Circuit) (*Circuit, error) {
+	_, err := d.client.CircuitDB.FindUnique(db.CircuitDB.ID.Equals(circuit.ID)).Update(
+		db.CircuitDB.Name.Set(circuit.Name),
+		db.CircuitDB.Board.Set(string(circuit.Board)),
+	).Exec(d.ctx)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	for _, pin := range circuit.Pins {
+		_, err := d.client.PinDB.FindMany(db.PinDB.And(db.PinDB.PinNumber.Equals(pin.PinNumber), db.PinDB.CircuitID.Equals(circuit.ID))).Update(
+			db.PinDB.Mode.Set(int(pin.Mode)),
+		).Exec(d.ctx)
+		if err != nil {
+			log.Print(err)
+			return nil, err
+		}
+	}
+
+	return d.GetCircuitByID(circuit.ID)
+}
+
 func (d *DAL) AddPin(circuitID int, pin Pin) (*db.PinDBModel, error) {
 	return d.client.PinDB.CreateOne(
 		db.PinDB.PinNumber.Set(pin.PinNumber),
