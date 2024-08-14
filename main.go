@@ -23,28 +23,23 @@ func init() {
 	}
 }
 
-// var port serial.Port
-var portServer *PortServer
-var httpServer *HTTPServer
-var dal *DAL
-var circuit *Circuit
-
 func main() {
-	portServer = NewPortServer()
-	httpServer = NewHTTPServer()
+	ps := NewPortServer()
 
-	dal = NewDAL()
+	dal := NewDAL(ps)
 	if err := dal.Connect(); err != nil {
 		log.Fatal(err)
 	}
 	defer dal.Disconnect()
 
+	circuit := NewCircuit(0, "Default Circuit", ArduinoNano, ps)
+
+	httpServer := NewHTTPServer(circuit, dal, ps)
+
 	hub := NewWSHub()
 	go hub.Run()
 
-	circuit = NewCircuit(0, "Default Circuit", ArduinoNano, portServer)
-
-	monitor := NewMonitor(hub, portServer, circuit)
+	monitor := NewMonitor(hub, ps, circuit)
 	go monitor.Run()
 
 	route := mux.NewRouter()
