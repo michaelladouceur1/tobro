@@ -32,7 +32,11 @@ func main() {
 	}
 	defer dal.Disconnect()
 
-	circuit := NewCircuit(0, "Default Circuit", ArduinoNano, ps)
+	defaultCircuit := NewCircuit(0, "Default Circuit", ArduinoNano, ps)
+	circuit, err := dal.InitCircuit(defaultCircuit)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	httpServer := NewHTTPServer(circuit, dal, ps)
 

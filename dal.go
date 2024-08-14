@@ -48,6 +48,18 @@ func (d *DAL) Disconnect() {
 	d.client.Disconnect()
 }
 
+func (d *DAL) InitCircuit(defaultCiruit *Circuit) (*Circuit, error) {
+	circuit, err := d.client.CircuitDB.FindFirst().With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
+	if err != nil {
+		if err.Error() == "Error: Record not found" {
+			return d.CreateCircuit(*defaultCiruit)
+		}
+		return nil, err
+	}
+
+	return NewCircuitFromDBModel(circuit, d.ps), nil
+}
+
 func (d *DAL) GetCircuitByID(id int) (*Circuit, error) {
 	circuit, err := d.client.CircuitDB.FindUnique(
 		db.CircuitDB.ID.Equals(id)).With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
