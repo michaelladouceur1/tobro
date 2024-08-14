@@ -9,12 +9,14 @@ import (
 type DAL struct {
 	ctx    context.Context
 	client *db.PrismaClient
+	ps     *PortServer
 }
 
-func NewDAL() *DAL {
+func NewDAL(ps *PortServer) *DAL {
 	return &DAL{
 		ctx:    context.Background(),
 		client: db.NewClient(),
+		ps:     ps,
 	}
 }
 
@@ -22,8 +24,8 @@ func NewDAL() *DAL {
 
 // }
 
-func NewCircuitFromDBModel(model *db.CircuitDBModel) *Circuit {
-	newCircuit := NewCircuit(model.ID, model.Name, SupportedBoards(model.Board), portServer)
+func NewCircuitFromDBModel(model *db.CircuitDBModel, ps *PortServer) *Circuit {
+	newCircuit := NewCircuit(model.ID, model.Name, SupportedBoards(model.Board), ps)
 
 	pins := model.Pins()
 	for _, pin := range pins {
@@ -53,7 +55,7 @@ func (d *DAL) GetCircuitByID(id int) (*Circuit, error) {
 		return nil, err
 	}
 
-	return NewCircuitFromDBModel(circuit), nil
+	return NewCircuitFromDBModel(circuit, d.ps), nil
 }
 
 func (d *DAL) CreateCircuit(circuit Circuit) (*Circuit, error) {

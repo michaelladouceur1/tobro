@@ -5,10 +5,18 @@ import (
 	"net/http"
 )
 
-type HTTPServer struct{}
+type HTTPServer struct {
+	circuit *Circuit
+	dal     *DAL
+	ps      *PortServer
+}
 
-func NewHTTPServer() *HTTPServer {
-	return &HTTPServer{}
+func NewHTTPServer(circuit *Circuit, dal *DAL, ps *PortServer) *HTTPServer {
+	return &HTTPServer{
+		circuit: circuit,
+		dal:     dal,
+		ps:      ps,
+	}
 }
 
 func pinResponseFromPin(pin Pin) PinResponse {
@@ -61,13 +69,13 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := portServer.OpenPort(req.Port)
+	err := s.ps.OpenPort(req.Port)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	portServer.ListenToPort()
+	s.ps.ListenToPort()
 
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
@@ -77,7 +85,7 @@ func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
-	pinResponses := pinResponseFromPins(circuit.Pins)
+	pinResponses := pinResponseFromPins(s.circuit.Pins)
 	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
 }
 
@@ -88,15 +96,15 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newCircuit, err := dal.CreateCircuit(*NewCircuit(0, req.Name, SupportedBoards(req.Board), portServer))
+	newCircuit, err := s.dal.CreateCircuit(*NewCircuit(0, req.Name, SupportedBoards(req.Board), s.ps))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	circuit.UpdateCircuit(newCircuit)
+	s.circuit.UpdateCircuit(newCircuit)
 
-	json.NewEncoder(w).Encode(circuitResponseFromCircuit(circuit))
+	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
 }
 
 func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
@@ -106,20 +114,20 @@ func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Id != circuit.ID {
+	if req.Id != s.circuit.ID {
 		http.Error(w, "invalid circuit id", http.StatusBadRequest)
 		return
 	}
 
-	newCircuit, err := dal.SaveCircuit(*circuit)
+	newCircuit, err := s.dal.SaveCircuit(*s.circuit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	circuit.UpdateCircuit(newCircuit)
+	s.circuit.UpdateCircuit(newCircuit)
 
-	json.NewEncoder(w).Encode(circuitResponseFromCircuit(circuit))
+	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
 }
 
 func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +137,7 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pin, err := circuit.GetPin(req.PinNumber)
+	pin, err := s.circuit.GetPin(req.PinNumber)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -151,7 +159,7 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pin, err := circuit.GetDigitalWritePin(req.PinNumber)
+	pin, err := s.circuit.GetDigitalWritePin(req.PinNumber)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -173,7 +181,7 @@ func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	pin, err := circuit.GetAnalogWritePin(req.PinNumber)
+	pin, err := s.circuit.GetAnalogWritePin(req.PinNumber)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
