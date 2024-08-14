@@ -92,6 +92,15 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 	}
 }
 
+func (b *Circuit) UpdateCircuit(updateCircuit *Circuit) error {
+	b.ID = updateCircuit.ID
+	b.Name = updateCircuit.Name
+	b.Board = updateCircuit.Board
+	b.Pins = updateCircuit.Pins
+
+	return nil
+}
+
 func (b *Circuit) PinCount() int {
 	return len(b.Pins)
 }
@@ -101,9 +110,9 @@ func (b *Circuit) GetState() Circuit {
 }
 
 func (b *Circuit) GetPin(pinNumber int) (*Pin, error) {
-	for _, p := range b.Pins {
+	for i, p := range b.Pins {
 		if p.PinNumber == pinNumber {
-			return &p, nil
+			return &b.Pins[i], nil
 		}
 	}
 
@@ -120,10 +129,10 @@ func (b *Circuit) GetPins() []*Pin {
 }
 
 func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
-	for _, p := range b.Pins {
+	for i, p := range b.Pins {
 		if p.PinNumber == pinNumber {
 			if p.DigitalWrite {
-				return &p, nil
+				return &b.Pins[i], nil
 			}
 
 			return nil, &PinNotDigitalError{}
@@ -135,10 +144,10 @@ func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
 }
 
 func (b *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
-	for _, p := range b.Pins {
+	for i, p := range b.Pins {
 		if p.PinNumber == pinNumber {
 			if p.AnalogWrite {
-				return &p, nil
+				return &b.Pins[i], nil
 			}
 
 			return nil, &PinNotAnalogError{}

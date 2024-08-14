@@ -28,6 +28,24 @@ import {
 export interface CircuitResponse {
     /**
      * 
+     * @type {number}
+     * @memberof CircuitResponse
+     */
+    id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof CircuitResponse
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CircuitResponse
+     */
+    board: string;
+    /**
+     * 
      * @type {Array<PinResponse>}
      * @memberof CircuitResponse
      */
@@ -38,6 +56,9 @@ export interface CircuitResponse {
  * Check if a given object implements the CircuitResponse interface.
  */
 export function instanceOfCircuitResponse(value: object): value is CircuitResponse {
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('board' in value) || value['board'] === undefined) return false;
     if (!('pins' in value) || value['pins'] === undefined) return false;
     return true;
 }
@@ -52,6 +73,9 @@ export function CircuitResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
+        'id': json['id'],
+        'name': json['name'],
+        'board': json['board'],
         'pins': ((json['pins'] as Array<any>).map(PinResponseFromJSON)),
     };
 }
@@ -62,6 +86,9 @@ export function CircuitResponseToJSON(value?: CircuitResponse | null): any {
     }
     return {
         
+        'id': value['id'],
+        'name': value['name'],
+        'board': value['board'],
         'pins': ((value['pins'] as Array<any>).map(PinResponseToJSON)),
     };
 }

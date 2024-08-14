@@ -13,5 +13,6 @@ export * from './DigitalWritePinResponse';
 export * from './ErrorResponse';
 export * from './PinResponse';
 export * from './Pong';
+export * from './SaveCircuitRequest';
 export * from './SetupPinRequest';
 export * from './SetupPinResponse';
