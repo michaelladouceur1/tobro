@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -97,10 +96,6 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 
 	circuit.UpdateCircuit(newCircuit)
 
-	log.Print(circuit.ID)
-	log.Print(circuit.Name)
-	log.Print(circuit.Board)
-
 	json.NewEncoder(w).Encode(circuitResponseFromCircuit(circuit))
 }
 
@@ -111,18 +106,9 @@ func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Print(req.Id)
-	log.Print(circuit.ID)
-	log.Print(circuit.Name)
-	log.Print(circuit.Board)
-
 	if req.Id != circuit.ID {
 		http.Error(w, "invalid circuit id", http.StatusBadRequest)
 		return
-	}
-
-	for _, pin := range circuit.Pins {
-		log.Print(pin.Mode)
 	}
 
 	newCircuit, err := dal.SaveCircuit(*circuit)
@@ -130,10 +116,6 @@ func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// for _, pin := range newCircuit.Pins {
-	// 	log.Print(pin.Mode)
-	// }
 
 	circuit.UpdateCircuit(newCircuit)
 
