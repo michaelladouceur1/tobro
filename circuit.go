@@ -110,14 +110,6 @@ func (c *Circuit) UpdateFromDBModel(model *db.CircuitDBModel) {
 	}
 }
 
-func (c *Circuit) PinCount() int {
-	return len(c.Pins)
-}
-
-func (c *Circuit) GetState() Circuit {
-	return *c
-}
-
 func (c *Circuit) GetPin(pinNumber int) (*Pin, error) {
 	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {

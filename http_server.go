@@ -51,13 +51,6 @@ func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
 	}
 }
 
-func digitalWritePinResponseFromPin(pin *Pin) DigitalWritePinResponse {
-	return DigitalWritePinResponse{
-		PinNumber: pin.PinNumber,
-		Value:     pin.GetPinState(),
-	}
-}
-
 func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
 }
@@ -159,13 +152,13 @@ func (s *HTTPServer) PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pin, err := s.circuit.GetDigitalWritePin(req.PinNumber)
+	dwPin, err := s.circuit.GetDigitalWritePin(req.PinNumber)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = pin.SetDigitalState(req.Value)
+	err = dwPin.SetDigitalState(req.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
