@@ -24,26 +24,28 @@ func init() {
 }
 
 func main() {
-	ps := NewPortServer()
+	portServer := NewPortServer()
 
-	dal := NewDAL(ps)
+	dal := NewDAL()
 	if err := dal.Connect(); err != nil {
 		log.Fatal(err)
 	}
 	defer dal.Disconnect()
 
-	defaultCircuit := NewCircuit(0, "Default Circuit", ArduinoNano, ps)
-	circuit, err := dal.InitCircuit(defaultCircuit)
+	circuit := NewCircuit(0, "Default Circuit", ArduinoNano, portServer)
+	dbCircuit, err := dal.InitCircuit(circuit)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	httpServer := NewHTTPServer(circuit, dal, ps)
+	circuit.UpdateFromDBModel(dbCircuit)
+
+	httpServer := NewHTTPServer(circuit, dal, portServer)
 
 	hub := NewWSHub()
 	go hub.Run()
 
-	monitor := NewMonitor(hub, ps, circuit)
+	monitor := NewMonitor(hub, portServer, circuit)
 	go monitor.Run()
 
 	route := mux.NewRouter()

@@ -1,5 +1,7 @@
 package main
 
+import "tobro/db"
+
 // arduino nano pinout
 // digital pins: 2-13
 // analog/digital pins: A0-A5
@@ -92,47 +94,54 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 	}
 }
 
-func (b *Circuit) UpdateCircuit(updateCircuit *Circuit) error {
-	b.ID = updateCircuit.ID
-	b.Name = updateCircuit.Name
-	b.Board = updateCircuit.Board
-	b.Pins = updateCircuit.Pins
+func (c *Circuit) UpdateFromDBModel(model *db.CircuitDBModel) {
+	c.ID = model.ID
+	c.Name = model.Name
+	c.Board = SupportedBoards(model.Board)
 
-	return nil
+	pins := model.Pins()
+	for _, pin := range pins {
+		cPin, err := c.GetPin(pin.PinNumber)
+		if err != nil {
+			continue
+		}
+
+		cPin.UpdateFromDBModel(&pin)
+	}
 }
 
-func (b *Circuit) PinCount() int {
-	return len(b.Pins)
+func (c *Circuit) PinCount() int {
+	return len(c.Pins)
 }
 
-func (b *Circuit) GetState() Circuit {
-	return *b
+func (c *Circuit) GetState() Circuit {
+	return *c
 }
 
-func (b *Circuit) GetPin(pinNumber int) (*Pin, error) {
-	for i, p := range b.Pins {
+func (c *Circuit) GetPin(pinNumber int) (*Pin, error) {
+	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {
-			return &b.Pins[i], nil
+			return &c.Pins[i], nil
 		}
 	}
 
 	return nil, &PinNotFoundError{}
 }
 
-func (b *Circuit) GetPins() []*Pin {
+func (c *Circuit) GetPins() []*Pin {
 	var pins []*Pin
-	for _, p := range b.Pins {
+	for _, p := range c.Pins {
 		pins = append(pins, &p)
 	}
 
 	return pins
 }
 
-func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
-	for i, p := range b.Pins {
+func (c *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
+	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {
 			if p.DigitalWrite {
-				return &b.Pins[i], nil
+				return &c.Pins[i], nil
 			}
 
 			return nil, &PinNotDigitalError{}
@@ -143,11 +152,11 @@ func (b *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
 	return nil, &PinNotFoundError{}
 }
 
-func (b *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
-	for i, p := range b.Pins {
+func (c *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
+	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {
 			if p.AnalogWrite {
-				return &b.Pins[i], nil
+				return &c.Pins[i], nil
 			}
 
 			return nil, &PinNotAnalogError{}

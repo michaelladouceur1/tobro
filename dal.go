@@ -9,35 +9,13 @@ import (
 type DAL struct {
 	ctx    context.Context
 	client *db.PrismaClient
-	ps     *PortServer
 }
 
-func NewDAL(ps *PortServer) *DAL {
+func NewDAL() *DAL {
 	return &DAL{
 		ctx:    context.Background(),
 		client: db.NewClient(),
-		ps:     ps,
 	}
-}
-
-// func NewPinFromDBModel(model *db.PinDBModel) *Pin {
-
-// }
-
-func NewCircuitFromDBModel(model *db.CircuitDBModel, ps *PortServer) *Circuit {
-	newCircuit := NewCircuit(model.ID, model.Name, SupportedBoards(model.Board), ps)
-
-	pins := model.Pins()
-	for _, pin := range pins {
-		cPin, err := newCircuit.GetPin(pin.PinNumber)
-		if err != nil {
-			continue
-		}
-
-		cPin.UpdateFromDBModel(&pin)
-	}
-
-	return newCircuit
 }
 
 func (d *DAL) Connect() error {
@@ -48,7 +26,7 @@ func (d *DAL) Disconnect() {
 	d.client.Disconnect()
 }
 
-func (d *DAL) InitCircuit(defaultCiruit *Circuit) (*Circuit, error) {
+func (d *DAL) InitCircuit(defaultCiruit *Circuit) (*db.CircuitDBModel, error) {
 	circuit, err := d.client.CircuitDB.FindFirst().With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
 	if err != nil {
 		if err.Error() == "Error: Record not found" {
@@ -57,20 +35,20 @@ func (d *DAL) InitCircuit(defaultCiruit *Circuit) (*Circuit, error) {
 		return nil, err
 	}
 
-	return NewCircuitFromDBModel(circuit, d.ps), nil
+	return circuit, nil
 }
 
-func (d *DAL) GetCircuitByID(id int) (*Circuit, error) {
+func (d *DAL) GetCircuitByID(id int) (*db.CircuitDBModel, error) {
 	circuit, err := d.client.CircuitDB.FindUnique(
 		db.CircuitDB.ID.Equals(id)).With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewCircuitFromDBModel(circuit, d.ps), nil
+	return circuit, nil
 }
 
-func (d *DAL) CreateCircuit(circuit Circuit) (*Circuit, error) {
+func (d *DAL) CreateCircuit(circuit Circuit) (*db.CircuitDBModel, error) {
 	newCircuit, err := d.client.CircuitDB.CreateOne(
 		db.CircuitDB.Name.Set(circuit.Name),
 		db.CircuitDB.Board.Set(string(circuit.Board))).Exec(d.ctx)
@@ -84,7 +62,7 @@ func (d *DAL) CreateCircuit(circuit Circuit) (*Circuit, error) {
 	return d.GetCircuitByID(newCircuit.ID)
 }
 
-func (d *DAL) SaveCircuit(circuit Circuit) (*Circuit, error) {
+func (d *DAL) SaveCircuit(circuit Circuit) (*db.CircuitDBModel, error) {
 	_, err := d.client.CircuitDB.FindUnique(db.CircuitDB.ID.Equals(circuit.ID)).Update(
 		db.CircuitDB.Name.Set(circuit.Name),
 		db.CircuitDB.Board.Set(string(circuit.Board)),

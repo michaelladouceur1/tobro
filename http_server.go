@@ -102,7 +102,7 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.circuit.UpdateCircuit(newCircuit)
+	s.circuit.UpdateFromDBModel(newCircuit)
 
 	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
 }
@@ -125,7 +125,7 @@ func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.circuit.UpdateCircuit(newCircuit)
+	s.circuit.UpdateFromDBModel(newCircuit)
 
 	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
 }
