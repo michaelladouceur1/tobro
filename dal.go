@@ -26,16 +26,16 @@ func (d *DAL) Disconnect() {
 	d.client.Disconnect()
 }
 
-func (d *DAL) InitCircuit(defaultCiruit *Circuit) (*db.CircuitDBModel, error) {
-	circuit, err := d.client.CircuitDB.FindFirst().With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
+func (d *DAL) InitCircuit(circuit *Circuit) (*db.CircuitDBModel, error) {
+	dbCircuit, err := d.client.CircuitDB.FindFirst().With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
 	if err != nil {
 		if err.Error() == "Error: Record not found" {
-			return d.CreateCircuit(*defaultCiruit)
+			return d.CreateCircuit(circuit.Name, string(circuit.Board))
 		}
 		return nil, err
 	}
 
-	return circuit, nil
+	return dbCircuit, nil
 }
 
 func (d *DAL) GetCircuitByID(id int) (*db.CircuitDBModel, error) {
@@ -48,16 +48,22 @@ func (d *DAL) GetCircuitByID(id int) (*db.CircuitDBModel, error) {
 	return circuit, nil
 }
 
-func (d *DAL) CreateCircuit(circuit Circuit) (*db.CircuitDBModel, error) {
+func (d *DAL) CreateCircuit(name string, board string) (*db.CircuitDBModel, error) {
 	newCircuit, err := d.client.CircuitDB.CreateOne(
-		db.CircuitDB.Name.Set(circuit.Name),
-		db.CircuitDB.Board.Set(string(circuit.Board))).Exec(d.ctx)
+		db.CircuitDB.Name.Set(name),
+		db.CircuitDB.Board.Set(board)).Exec(d.ctx)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
 
-	d.AddPins(newCircuit.ID, circuit.Pins)
+	pins, err := SupportedBoardPins(board)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	d.AddPins(newCircuit.ID, pins)
 
 	return d.GetCircuitByID(newCircuit.ID)
 }

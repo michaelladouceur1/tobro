@@ -40,7 +40,7 @@ func main() {
 
 	circuit.UpdateFromDBModel(dbCircuit)
 
-	httpServer := NewHTTPServer(circuit, dal, portServer)
+	httpServer := NewHTTPServer(circuit, dal)
 
 	hub := NewWSHub()
 	go hub.Run()

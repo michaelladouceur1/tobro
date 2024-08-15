@@ -8,14 +8,12 @@ import (
 type HTTPServer struct {
 	circuit *Circuit
 	dal     *DAL
-	ps      *PortServer
 }
 
-func NewHTTPServer(circuit *Circuit, dal *DAL, ps *PortServer) *HTTPServer {
+func NewHTTPServer(circuit *Circuit, dal *DAL) *HTTPServer {
 	return &HTTPServer{
 		circuit: circuit,
 		dal:     dal,
-		ps:      ps,
 	}
 }
 
@@ -62,13 +60,11 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.ps.OpenPort(req.Port)
+	err := s.circuit.Connect(req.Port)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	s.ps.ListenToPort()
 
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
@@ -89,7 +85,7 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newCircuit, err := s.dal.CreateCircuit(*NewCircuit(0, req.Name, SupportedBoards(req.Board), s.ps))
+	newCircuit, err := s.dal.CreateCircuit(req.Name, req.Board)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -107,10 +103,10 @@ func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Id != s.circuit.ID {
-		http.Error(w, "invalid circuit id", http.StatusBadRequest)
-		return
-	}
+	// if req.Id != s.circuit.ID {
+	// 	http.Error(w, "invalid circuit id", http.StatusBadRequest)
+	// 	return
+	// }
 
 	newCircuit, err := s.dal.SaveCircuit(*s.circuit)
 	if err != nil {

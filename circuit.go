@@ -19,7 +19,7 @@ const (
 )
 
 type Circuit struct {
-	PortServer *PortServer
+	portServer *PortServer
 	ID         int
 	Name       string
 	Board      SupportedBoards
@@ -62,7 +62,7 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 		}
 
 		return &Circuit{
-			PortServer: ps,
+			portServer: ps,
 			ID:         id,
 			Name:       name,
 			Board:      ArduinoNano,
@@ -92,6 +92,25 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 	default:
 		return nil
 	}
+}
+
+func SupportedBoardPins(board string) ([]Pin, error) {
+	circuit := NewCircuit(0, "", SupportedBoards(board), nil)
+	if circuit == nil {
+		return nil, &UnsupportedBoardError{}
+	}
+	return circuit.Pins, nil
+}
+
+func (c *Circuit) Connect(port string) error {
+	err := c.portServer.OpenPort(port)
+	if err != nil {
+		return err
+	}
+
+	c.portServer.ListenToPort()
+
+	return nil
 }
 
 func (c *Circuit) UpdateFromDBModel(model *db.CircuitDBModel) {
@@ -174,4 +193,10 @@ type PinNotAnalogError struct{}
 
 func (e *PinNotAnalogError) Error() string {
 	return "Pin is not analog"
+}
+
+type UnsupportedBoardError struct{}
+
+func (e *UnsupportedBoardError) Error() string {
+	return "Unsupported board"
 }
