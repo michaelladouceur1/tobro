@@ -24,7 +24,13 @@ func init() {
 }
 
 func main() {
-	portServer := NewPortServer()
+	s, err := NewSession("session.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ps := NewPortServer(s)
+	log.Print("PortServer created")
 
 	dal := NewDAL()
 	if err := dal.Connect(); err != nil {
@@ -32,44 +38,44 @@ func main() {
 	}
 	defer dal.Disconnect()
 
-	circuit := NewCircuit(0, "Default Circuit", ArduinoNano, portServer)
-	dbCircuit, err := dal.InitCircuit(circuit)
+	c := NewCircuit(0, "Default Circuit", ArduinoNano, ps)
+	dbCircuit, err := dal.InitCircuit(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	circuit.UpdateFromDBModel(dbCircuit)
+	c.UpdateFromDBModel(dbCircuit)
 
-	httpServer := NewHTTPServer(circuit, dal)
+	hs := NewHTTPServer(s, dal, c)
 
 	hub := NewWSHub()
 	go hub.Run()
 
-	monitor := NewMonitor(hub, portServer, circuit)
-	go monitor.Run()
+	m := NewMonitor(hub, ps, c)
+	go m.Run()
 
-	route := mux.NewRouter()
+	r := mux.NewRouter()
 
-	route.Use(enableCORS)
-	route.Use(logRequest)
+	r.Use(enableCORS)
+	r.Use(logRequest)
 
-	h := HandlerFromMux(httpServer, route)
-	route.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	h := HandlerFromMux(hs, r)
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
 
 	if os.Getenv("GO_ENV") != "dev" {
 		log.Print("Serving UI from embed.FS")
-		route.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
+		r.PathPrefix("/").Handler(http.FileServer(http.FS(uiFS)))
 	} else {
 		log.Print("Serving UI from web/build")
-		route.PathPrefix("/").Handler(http.FileServer(http.Dir("web/build")))
+		r.PathPrefix("/").Handler(http.FileServer(http.Dir("web/build")))
 	}
 
-	s := &http.Server{
+	srv := &http.Server{
 		Handler: h,
 		Addr:    ":8080",
 	}
 
-	s.ListenAndServe()
+	srv.ListenAndServe()
 }

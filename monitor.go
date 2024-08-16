@@ -26,8 +26,6 @@ func (m *Monitor) Run() {
 }
 
 func (m *Monitor) watchPorts() {
-	go m.ps.WatchPorts()
-
 	for ports := range m.ps.AvaiblePorts {
 		json, err := json.Marshal(createPortsResponse(ports))
 		if err != nil {
