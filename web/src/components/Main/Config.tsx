@@ -52,9 +52,7 @@ function AddCircuitModal({
   };
 
   const handleAdd = async () => {
-    console.log("Adding new circuit");
     const res = await api.createCircuit(newCircuit.name, newCircuit.board);
-    console.log(res);
     close();
   };
 
@@ -182,10 +180,6 @@ export function Config() {
   const handleCreateCircuit = async () => {
     // await api.createCircuit()
   };
-
-  useEffect(() => {
-    console.log(circuit);
-  }, [circuit]);
 
   const Config = styled(Box)({
     width: "100%",

@@ -74,8 +74,7 @@ func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
-	pinResponses := pinResponseFromPins(s.circuit.Pins)
-	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
+	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
 }
 
 func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {

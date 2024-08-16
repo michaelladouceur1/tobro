@@ -21,7 +21,10 @@ export function useHttpApi() {
         },
         {
           req: api.circuitGet(),
-          set: (res: any) => setCircuitFromCircuitResponse(setCircuit, res)
+          set: (res: any) => {
+            console.log("Got circuit", res);
+            setCircuitFromCircuitResponse(setCircuit, res);
+          }
         }
       ]
       
@@ -34,12 +37,10 @@ export function useHttpApi() {
     },
     createCircuit: async (name: string, board: string) => {
       const res = await api.circuitPost({createCircuitRequest: {name, board}});
-      console.log("Created circuit", res);
       setCircuitFromCircuitResponse(setCircuit, res);
     },
     saveCircuit: async (id: number) => {
       const res = await api.saveCircuitPost({saveCircuitRequest: {id}});
-      console.log("Saved circuit", res);
       setCircuitFromCircuitResponse(setCircuit, res);
     },
     getBoards: async () => {
