@@ -20,6 +20,11 @@ type PortsResponseData struct {
 	Ports []string `json:"ports"`
 }
 
+type PortConnectionResponseData struct {
+	Connected bool   `json:"connected"`
+	PortName  string `json:"portName"`
+}
+
 type PinStateResponseData struct {
 	PinNumber int `json:"pinNumber"`
 	State     int `json:"state"`
@@ -30,6 +35,16 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 		Type: "ports",
 		Data: PortsResponseData{
 			Ports: ports,
+		},
+	}
+}
+
+func createPortConnectionResponse(connected bool, portName string) BaseResponse[PortConnectionResponseData] {
+	return BaseResponse[PortConnectionResponseData]{
+		Type: "port_connection",
+		Data: PortConnectionResponseData{
+			Connected: connected,
+			PortName:  portName,
 		},
 	}
 }

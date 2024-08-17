@@ -22,12 +22,27 @@ func NewMonitor(hub *WSHub, ps *PortServer, circuit *Circuit) *Monitor {
 
 func (m *Monitor) Run() {
 	go m.watchPorts()
+	go m.watchPortConnection()
 	go m.watchPinState()
 }
 
 func (m *Monitor) watchPorts() {
 	for ports := range m.ps.AvaiblePorts {
 		json, err := json.Marshal(createPortsResponse(ports))
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		m.hub.broadcast <- json
+	}
+}
+
+func (m *Monitor) watchPortConnection() {
+	for {
+		log.Println("Waiting for port connection")
+		connected := <-m.ps.Connected
+		json, err := json.Marshal(createPortConnectionResponse(connected, m.ps.PortName))
 		if err != nil {
 			log.Fatal(err)
 			return

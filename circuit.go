@@ -20,7 +20,6 @@ const (
 
 type Circuit struct {
 	portServer *PortServer
-	Port       string
 	ID         int
 	Name       string
 	Board      SupportedBoards

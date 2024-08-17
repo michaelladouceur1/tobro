@@ -52,7 +52,9 @@ func main() {
 	go hub.Run()
 
 	m := NewMonitor(hub, ps, c)
-	go m.Run()
+	m.Run()
+
+	ps.attemptAutoConnect()
 
 	r := mux.NewRouter()
 

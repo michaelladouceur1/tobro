@@ -10,8 +10,9 @@ import (
 
 type PortServer struct {
 	session      *Session
-	PortName     string
 	Port         serial.Port
+	Connected    chan bool
+	PortName     string
 	AvaiblePorts chan []string
 	Settings     serial.Mode
 }
@@ -58,6 +59,7 @@ func NewPortServer(session *Session) *PortServer {
 	ps := &PortServer{
 		session:      session,
 		Port:         nil,
+		Connected:    make(chan bool),
 		AvaiblePorts: make(chan []string),
 		Settings: serial.Mode{
 			BaudRate: 115200,
@@ -65,7 +67,7 @@ func NewPortServer(session *Session) *PortServer {
 	}
 
 	go ps.watchPorts()
-	ps.attemptAutoConnect()
+	// ps.attemptAutoConnect()
 
 	return ps
 }
@@ -91,6 +93,7 @@ func (ps *PortServer) OpenPort(port string) error {
 	}
 
 	ps.PortName = port
+	ps.Connected <- true
 
 	return nil
 }
@@ -219,6 +222,10 @@ func (ps *PortServer) watchPorts() {
 
 		ps.AvaiblePorts <- ports
 
+		if len(ports) == 0 {
+			ps.resetPort()
+		}
+
 		// if ps.Port != nil && ps.PortName != "" {
 		// 	if err = ps.portExists(ps.PortName); err != nil {
 		// 		log.Print("Port does not exist")
@@ -273,10 +280,15 @@ func (ps *PortServer) closePort() error {
 		return err
 	}
 
-	ps.Port = nil
-	ps.PortName = ""
+	ps.resetPort()
 
 	return nil
+}
+
+func (ps *PortServer) resetPort() {
+	ps.Port = nil
+	ps.PortName = ""
+	ps.Connected <- false
 }
 
 func (ps *PortServer) attemptOpenPort(attempts int, port string) error {
