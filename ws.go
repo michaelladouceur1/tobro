@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -71,7 +72,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
+func serveWs(hub *WSHub, ps *PortServer, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print(err)
@@ -81,6 +82,20 @@ func serveWs(hub *WSHub, w http.ResponseWriter, r *http.Request) {
 	client := &WSClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
+	SendPortName(hub, ps)
+
 	go client.Write()
 	go client.Read()
+}
+
+func SendPortName(hub *WSHub, ps *PortServer) error {
+	connected := ps.PortName != ""
+	json, err := json.Marshal(createPortConnectionResponse(connected, ps.PortName))
+	if err != nil {
+		return err
+	}
+
+	hub.broadcast <- json
+
+	return nil
 }

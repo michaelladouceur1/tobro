@@ -54,8 +54,6 @@ func main() {
 	m := NewMonitor(hub, ps, c)
 	m.Run()
 
-	ps.attemptAutoConnect()
-
 	r := mux.NewRouter()
 
 	r.Use(enableCORS)
@@ -63,7 +61,7 @@ func main() {
 
 	h := HandlerFromMux(hs, r)
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+		serveWs(hub, ps, w, r)
 	})
 
 	if os.Getenv("GO_ENV") != "dev" {

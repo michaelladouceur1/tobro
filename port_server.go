@@ -67,7 +67,7 @@ func NewPortServer(session *Session) *PortServer {
 	}
 
 	go ps.watchPorts()
-	// ps.attemptAutoConnect()
+	go ps.autoConnect()
 
 	return ps
 }
@@ -77,18 +77,21 @@ func (ps *PortServer) OpenPort(port string) error {
 
 	err = ps.portExists(port)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
 	if ps.Port != nil {
 		err = ps.closePort()
 		if err != nil {
+			log.Print(err)
 			return err
 		}
 	}
 
 	err = ps.attemptOpenPort(10, port)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
@@ -222,49 +225,38 @@ func (ps *PortServer) watchPorts() {
 
 		ps.AvaiblePorts <- ports
 
-		if len(ports) == 0 {
-			ps.resetPort()
-		}
-
-		// if ps.Port != nil && ps.PortName != "" {
-		// 	if err = ps.portExists(ps.PortName); err != nil {
-		// 		log.Print("Port does not exist")
-		// 		ps.closePort()
-		// 	}
-
-		// 	continue
-		// }
-
 		time.Sleep(1 * time.Second)
 	}
 }
 
-func (ps *PortServer) attemptAutoConnect() error {
-	if ps.Port != nil {
-		return nil
-	}
+// this function assumes the arduino is connected to the first available port and the only connected serial device
+// this is a temporary solution. a symlink to the arduino port should be created in the future
+func (ps *PortServer) autoConnect() {
+	for {
+		ports := <-ps.AvaiblePorts
+		if len(ports) == 0 {
+			log.Print("No ports available")
+			ps.resetPort()
+			continue
+		}
 
-	if ps.session.Port != "" {
-		log.Printf("Auto connecting to port: %s", ps.session.Port)
-		err := ps.OpenPort(ps.session.Port)
-		if err != nil {
-			return err
+		if len(ports) > 0 && ps.Port == nil {
+			log.Printf("Attempting to open port: %s", ports[0])
+			err := ps.OpenPort(ports[0])
+			if err != nil {
+				log.Print(err)
+			}
 		}
 	}
-
-	return nil
 }
 
 func (ps *PortServer) portExists(port string) error {
 	availablePorts := <-ps.AvaiblePorts
-	log.Print(availablePorts)
 	for _, p := range availablePorts {
 		log.Print(p)
 		if p == port {
-			log.Print("Port exists")
 			return nil
 		}
-		log.Print("Port does not exist")
 	}
 
 	return &PortDoesNotExistError{}
