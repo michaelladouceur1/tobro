@@ -6,14 +6,16 @@ import (
 )
 
 type HTTPServer struct {
-	circuit *Circuit
+	session *Session
 	dal     *DAL
+	circuit *Circuit
 }
 
-func NewHTTPServer(circuit *Circuit, dal *DAL) *HTTPServer {
+func NewHTTPServer(session *Session, dal *DAL, circuit *Circuit) *HTTPServer {
 	return &HTTPServer{
-		circuit: circuit,
+		session: session,
 		dal:     dal,
+		circuit: circuit,
 	}
 }
 
@@ -66,6 +68,12 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = s.session.UpdatePort(req.Port)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
 
@@ -74,8 +82,7 @@ func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
-	pinResponses := pinResponseFromPins(s.circuit.Pins)
-	json.NewEncoder(w).Encode(CircuitResponse{Pins: pinResponses})
+	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
 }
 
 func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {

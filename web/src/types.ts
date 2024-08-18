@@ -13,6 +13,8 @@ export enum DigitalState {
   High = 1,
 }
 
+
+
 export interface Pin {
   pinNumber: number;
   type: string;
@@ -35,6 +37,11 @@ export interface Circuit {
 
 export interface CircuitState {
   [key: number]: number;
+}
+
+export interface PortConnection {
+  connected: boolean;
+  portName: string;
 }
 
 export interface Ports {

@@ -3,33 +3,25 @@ import { useEffect, useState } from "react";
 import { MessageType } from "../api/ws_client/types";
 import { WebsocketClient } from "../api/ws_client/wsClient";
 import { circuitAtom } from "../atoms/circuitAtom";
+import { portConnectionAtom } from "../atoms/portConnection";
 import { portsAtom } from "../atoms/portsAtom";
-import { PinMode } from "../types";
 
 export function useWsApi() {
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   const setCircuit = useSetAtom(circuitAtom);
   const setPorts = useSetAtom(portsAtom);
+  const setPortConnection = useSetAtom(portConnectionAtom);
 
   useEffect(() => {
-    let initialized = false;
     const ws = WebsocketClient("ws://localhost:8080/ws", {
-      [MessageType.Circuit]: (data) => {
-        const { pins } = data;
-
-        if (!initialized) {
-          const state = pins.map((pin) => ({ ...pin, state: 0, mode: "input" }));
-          setCircuit({ pins: state });
-          initialized = true;
-          return;
-        }
-
-        setCircuit({ pins });
-      },
       [MessageType.Ports]: (data) => {
         const { ports } = data;
         setPorts({ ports });
+      },
+      [MessageType.PortConnection]: (data) => {
+        const { connected, portName } = data;
+        setPortConnection({ connected, portName });
       },
       [MessageType.PinState]: (data) => {
         const { pinNumber, state } = data;
@@ -40,7 +32,7 @@ export function useWsApi() {
             }
             return pin;
           });
-          return { pins: newCircuit };
+          return { ...prev, pins: newCircuit };
         });
       },
     });

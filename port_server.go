@@ -9,8 +9,10 @@ import (
 )
 
 type PortServer struct {
-	PortName     string
+	session      *Session
 	Port         serial.Port
+	Connected    chan bool
+	PortName     string
 	AvaiblePorts chan []string
 	Settings     serial.Mode
 }
@@ -53,95 +55,48 @@ type AnalogWritePinCommand struct {
 	Value   uint `json:"v"`
 }
 
-func NewPortServer() *PortServer {
-	return &PortServer{
+func NewPortServer(session *Session) *PortServer {
+	ps := &PortServer{
+		session:      session,
 		Port:         nil,
+		Connected:    make(chan bool),
 		AvaiblePorts: make(chan []string),
 		Settings: serial.Mode{
 			BaudRate: 115200,
 		},
 	}
-}
 
-func (ps *PortServer) WatchPorts() {
-	for {
-		ports, err := serial.GetPortsList()
-		if err != nil {
-			continue
-		}
+	go ps.watchPorts()
+	go ps.autoConnect()
 
-		ps.AvaiblePorts <- ports
-
-		// if ps.Port != nil && ps.PortName != "" {
-		// 	if err = ps.PortExists(ps.PortName); err != nil {
-		// 		log.Print("Port does not exist")
-		// 		ps.ClosePort()
-		// 	}
-
-		// 	continue
-		// }
-
-		time.Sleep(1 * time.Second)
-	}
+	return ps
 }
 
 func (ps *PortServer) OpenPort(port string) error {
 	var err error
 
-	err = ps.PortExists(port)
+	err = ps.portExists(port)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
 	if ps.Port != nil {
-		err = ps.ClosePort()
+		err = ps.closePort()
 		if err != nil {
+			log.Print(err)
 			return err
 		}
 	}
 
 	err = ps.attemptOpenPort(10, port)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
 	ps.PortName = port
-
-	return nil
-}
-
-func (ps *PortServer) ClosePort() error {
-	if ps.Port == nil {
-		return nil
-	}
-
-	err := ps.Port.Close()
-	if err != nil {
-		return err
-	}
-
-	ps.Port = nil
-	ps.PortName = ""
-
-	return nil
-}
-
-func (ps *PortServer) attemptOpenPort(attempts int, port string) error {
-	var err error
-
-	for i := 0; i < attempts; i++ {
-		ps.Port, err = serial.Open(port, &ps.Settings)
-		if err != nil {
-			if i == attempts-1 {
-				return &PortOpenTimeoutError{}
-			}
-
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-
-		break
-	}
+	ps.Connected <- true
 
 	return nil
 }
@@ -158,7 +113,7 @@ func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
 		return err
 	}
 
-	err = ps.Write(json)
+	err = ps.write(json)
 	if err != nil {
 		return err
 	}
@@ -178,7 +133,7 @@ func (ps *PortServer) WriteDigitalPin(pin int, value int) error {
 		return err
 	}
 
-	err = ps.Write(json)
+	err = ps.write(json)
 	if err != nil {
 		return err
 	}
@@ -198,7 +153,7 @@ func (ps *PortServer) WriteAnalogPin(pin int, value int) error {
 		return err
 	}
 
-	err = ps.Write(json)
+	err = ps.write(json)
 	if err != nil {
 		return err
 	}
@@ -206,7 +161,7 @@ func (ps *PortServer) WriteAnalogPin(pin int, value int) error {
 	return nil
 }
 
-func (ps *PortServer) Write(data []byte) error {
+func (ps *PortServer) write(data []byte) error {
 	if ps.Port == nil {
 		return &PortNotOpenError{}
 	}
@@ -261,19 +216,91 @@ func (ps *PortServer) ListenToPort() chan ListenToPortResult {
 	return ch
 }
 
-func (ps *PortServer) PortExists(port string) error {
+func (ps *PortServer) watchPorts() {
+	for {
+		ports, err := serial.GetPortsList()
+		if err != nil {
+			continue
+		}
+
+		ps.AvaiblePorts <- ports
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
+// this function assumes the arduino is connected to the first available port and the only connected serial device
+// this is a temporary solution. a symlink to the arduino port should be created in the future
+func (ps *PortServer) autoConnect() {
+	for {
+		ports := <-ps.AvaiblePorts
+		if len(ports) == 0 {
+			log.Print("No ports available")
+			ps.resetPort()
+			continue
+		}
+
+		if len(ports) > 0 && ps.Port == nil {
+			log.Printf("Attempting to open port: %s", ports[0])
+			err := ps.OpenPort(ports[0])
+			if err != nil {
+				log.Print(err)
+			}
+		}
+	}
+}
+
+func (ps *PortServer) portExists(port string) error {
 	availablePorts := <-ps.AvaiblePorts
-	log.Print(availablePorts)
 	for _, p := range availablePorts {
 		log.Print(p)
 		if p == port {
-			log.Print("Port exists")
 			return nil
 		}
-		log.Print("Port does not exist")
 	}
 
 	return &PortDoesNotExistError{}
+}
+
+func (ps *PortServer) closePort() error {
+	if ps.Port == nil {
+		return nil
+	}
+
+	err := ps.Port.Close()
+	if err != nil {
+		return err
+	}
+
+	ps.resetPort()
+
+	return nil
+}
+
+func (ps *PortServer) resetPort() {
+	ps.Port = nil
+	ps.PortName = ""
+	ps.Connected <- false
+}
+
+func (ps *PortServer) attemptOpenPort(attempts int, port string) error {
+	var err error
+
+	for i := 0; i < attempts; i++ {
+		ps.Port, err = serial.Open(port, &ps.Settings)
+		if err != nil {
+			if i == attempts-1 {
+				return &PortOpenTimeoutError{}
+			}
+
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+
+		break
+	}
+
+	return nil
 }
 
 type PortDoesNotExistError struct{}
