@@ -40,7 +40,6 @@ func (m *Monitor) watchPorts() {
 
 func (m *Monitor) watchPortConnection() {
 	for {
-		log.Println("Waiting for port connection")
 		connected := <-m.ps.Connected
 		json, err := json.Marshal(createPortConnectionResponse(connected, m.ps.PortName))
 		if err != nil {
@@ -73,8 +72,6 @@ func (m *Monitor) watchPinState() {
 						log.Fatal(err)
 						return
 					}
-
-					log.Print("Pin state: ", string(json))
 
 					m.hub.broadcast <- json
 				}

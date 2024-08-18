@@ -1,6 +1,8 @@
 package main
 
-import "tobro/db"
+import (
+	"tobro/db"
+)
 
 // arduino nano pinout
 // digital pins: 2-13
@@ -61,7 +63,7 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 			AnalogWrite:  false,
 		}
 
-		return &Circuit{
+		c := &Circuit{
 			portServer: ps,
 			ID:         id,
 			Name:       name,
@@ -89,6 +91,10 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 				*NewPin(ps, 21, analogPinConfig),
 			},
 		}
+
+		go c.watchPortConnection()
+
+		return c
 	default:
 		return nil
 	}
@@ -175,6 +181,21 @@ func (c *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
 	}
 
 	return nil, &PinNotFoundError{}
+}
+
+func (c *Circuit) Reset() {
+	for i := range c.Pins {
+		c.Pins[i].State <- 0
+	}
+}
+
+func (c *Circuit) watchPortConnection() {
+	for {
+		connected := <-c.portServer.Connected
+		if !connected {
+			c.Reset()
+		}
+	}
 }
 
 type PinNotFoundError struct{}

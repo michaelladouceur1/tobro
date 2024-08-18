@@ -225,7 +225,7 @@ func (ps *PortServer) watchPorts() {
 
 		ps.AvaiblePorts <- ports
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -234,14 +234,13 @@ func (ps *PortServer) watchPorts() {
 func (ps *PortServer) autoConnect() {
 	for {
 		ports := <-ps.AvaiblePorts
+
 		if len(ports) == 0 {
-			log.Print("No ports available")
 			ps.resetPort()
-			continue
+			// continue
 		}
 
 		if len(ports) > 0 && ps.Port == nil {
-			log.Printf("Attempting to open port: %s", ports[0])
 			err := ps.OpenPort(ports[0])
 			if err != nil {
 				log.Print(err)
