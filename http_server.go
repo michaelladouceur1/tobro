@@ -53,10 +53,6 @@ func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
 	}
 }
 
-func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
-}
-
 func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	var req ConnectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
