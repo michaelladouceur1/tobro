@@ -26,6 +26,8 @@ func (d *DAL) Disconnect() {
 	d.client.Disconnect()
 }
 
+// Circuit
+
 func (d *DAL) InitCircuit(circuit *Circuit) (*db.CircuitDBModel, error) {
 	dbCircuit, err := d.client.CircuitDB.FindFirst().With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
 	if err != nil {
@@ -39,13 +41,8 @@ func (d *DAL) InitCircuit(circuit *Circuit) (*db.CircuitDBModel, error) {
 }
 
 func (d *DAL) GetCircuitByID(id int) (*db.CircuitDBModel, error) {
-	circuit, err := d.client.CircuitDB.FindUnique(
+	return d.client.CircuitDB.FindUnique(
 		db.CircuitDB.ID.Equals(id)).With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return circuit, nil
 }
 
 func (d *DAL) CreateCircuit(name string, board string) (*db.CircuitDBModel, error) {
@@ -109,4 +106,13 @@ func (d *DAL) AddPins(circuitID int, pins []Pin) ([]*db.PinDBModel, error) {
 		pinModels = append(pinModels, pinModel)
 	}
 	return pinModels, nil
+}
+
+// Sketch
+
+func (d *DAL) CreateSketch(circuitID int, name string) (*db.SketchDBModel, error) {
+	return d.client.SketchDB.CreateOne(
+		db.SketchDB.Name.Set(name),
+		db.SketchDB.Circuit.Link(db.CircuitDB.ID.Equals(circuitID)),
+	).Exec(d.ctx)
 }

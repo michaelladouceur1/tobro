@@ -9,13 +9,15 @@ type HTTPServer struct {
 	session *Session
 	dal     *DAL
 	circuit *Circuit
+	sketch  *Sketch
 }
 
-func NewHTTPServer(session *Session, dal *DAL, circuit *Circuit) *HTTPServer {
+func NewHTTPServer(session *Session, dal *DAL, circuit *Circuit, sketch *Sketch) *HTTPServer {
 	return &HTTPServer{
 		session: session,
 		dal:     dal,
 		circuit: circuit,
+		sketch:  sketch,
 	}
 }
 
@@ -80,6 +82,8 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(BoardsResponse{Boards: supportedBoards})
 }
+
+// Circuit
 
 func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
@@ -191,3 +195,5 @@ func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) 
 
 	json.NewEncoder(w).Encode(AnalogWritePinResponse{PinNumber: &req.PinNumber, Value: &req.Value})
 }
+
+// Sketch

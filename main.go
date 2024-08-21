@@ -46,7 +46,9 @@ func main() {
 
 	c.UpdateFromDBModel(dbCircuit)
 
-	hs := NewHTTPServer(s, dal, c)
+	sk := NewSketch(0, "Default Sketch", c)
+
+	hs := NewHTTPServer(s, dal, c, sk)
 
 	hub := NewWSHub()
 	go hub.Run()
