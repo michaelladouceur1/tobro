@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"os/exec"
 	"time"
 
 	"go.bug.st/serial"
@@ -87,6 +88,12 @@ func (ps *PortServer) OpenPort(port string) error {
 			log.Print(err)
 			return err
 		}
+	}
+
+	err = ps.setupPort(port)
+	if err != nil {
+		log.Print(err)
+		return err
 	}
 
 	err = ps.attemptOpenPort(10, port)
@@ -280,6 +287,17 @@ func (ps *PortServer) resetPort() {
 	ps.Port = nil
 	ps.PortName = ""
 	ps.Connected <- false
+}
+
+func (ps *PortServer) setupPort(port string) error {
+	cmd := exec.Command("sudo", "chmod", "a+rw", port)
+	log.Printf("Running command: %s", cmd.String())
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ps *PortServer) attemptOpenPort(attempts int, port string) error {
