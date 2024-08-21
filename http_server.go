@@ -53,6 +53,30 @@ func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
 	}
 }
 
+func apiSketchStepsFromSketchSteps(steps []SketchStep) []SketchStepAPI {
+	apiSketchSteps := make([]SketchStepAPI, 0)
+	for _, step := range steps {
+		apiSketchSteps = append(apiSketchSteps, SketchStepAPI{
+			Id:        step.ID,
+			Start:     step.Start,
+			End:       step.End,
+			PinNumber: step.Pin.PinNumber,
+			Action:    string(step.Action),
+		})
+	}
+
+	return apiSketchSteps
+}
+
+func apiSketchFromSketch(sketch *Sketch) SketchAPI {
+	apiSketchSteps := apiSketchStepsFromSketchSteps(sketch.Steps)
+	return SketchAPI{
+		Id:    sketch.ID,
+		Name:  sketch.Name,
+		Steps: apiSketchSteps,
+	}
+}
+
 func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 	var req ConnectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -193,3 +217,25 @@ func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) 
 }
 
 // Sketch
+
+func (s *HTTPServer) GetSketch(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(apiSketchFromSketch(s.sketch))
+}
+
+func (s *HTTPServer) PostSketch(w http.ResponseWriter, r *http.Request) {
+	var req SketchAPI
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newSketch, err := s.dal.CreateSketch(s.circuit.ID, req.Name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	s.sketch.UpdateFromDBModel(newSketch)
+
+	json.NewEncoder(w).Encode(apiSketchFromSketch(s.sketch))
+}
