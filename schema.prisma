@@ -42,7 +42,7 @@ model SketchStepDB {
     sketchId Int
     pin      PinDB    @relation(fields: [pinId], references: [id])
     pinId    Int
-    start    DateTime
-    end      DateTime
+    start    Int
+    end      Int
     action   String
 }
