@@ -8,25 +8,41 @@ generator client {
 }
 
 model CircuitDB {
-    id        Int      @id @default(autoincrement())
+    id        Int        @id @default(autoincrement())
     name      String
     board     String
     pins      PinDB[]
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
-model SketchDB {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    sketches  SketchDB[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
 }
 
 model PinDB {
-    id        Int       @id @default(autoincrement())
-    pinNumber Int
-    mode      Int       @default(0) // 0 = INPUT, 1 = OUTPUT
-    circuit   CircuitDB @relation(fields: [circuitId], references: [id])
+    id           Int            @id @default(autoincrement())
+    pinNumber    Int
+    mode         Int            @default(0) // 0 = INPUT, 1 = OUTPUT
+    circuit      CircuitDB      @relation(fields: [circuitId], references: [id])
+    circuitId    Int
+    SketchStepDB SketchStepDB[]
+}
+
+model SketchDB {
+    id        Int            @id @default(autoincrement())
+    name      String
+    steps     SketchStepDB[]
+    circuit   CircuitDB      @relation(fields: [circuitId], references: [id])
     circuitId Int
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
+}
+
+model SketchStepDB {
+    id       Int      @id @default(autoincrement())
+    sketch   SketchDB @relation(fields: [sketchId], references: [id])
+    sketchId Int
+    pin      PinDB    @relation(fields: [pinId], references: [id])
+    pinId    Int
+    start    Int
+    end      Int
+    action   String
 }

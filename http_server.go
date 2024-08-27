@@ -9,13 +9,15 @@ type HTTPServer struct {
 	session *Session
 	dal     *DAL
 	circuit *Circuit
+	sketch  *Sketch
 }
 
-func NewHTTPServer(session *Session, dal *DAL, circuit *Circuit) *HTTPServer {
+func NewHTTPServer(session *Session, dal *DAL, circuit *Circuit, sketch *Sketch) *HTTPServer {
 	return &HTTPServer{
 		session: session,
 		dal:     dal,
 		circuit: circuit,
+		sketch:  sketch,
 	}
 }
 
@@ -51,8 +53,28 @@ func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
 	}
 }
 
-func (s *HTTPServer) GetPing(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(SuccessResponse{Message: "pong"})
+func apiSketchStepsFromSketchSteps(steps []SketchStep) []SketchStepAPI {
+	apiSketchSteps := make([]SketchStepAPI, 0)
+	for _, step := range steps {
+		apiSketchSteps = append(apiSketchSteps, SketchStepAPI{
+			Id:        step.ID,
+			Start:     step.Start,
+			End:       step.End,
+			PinNumber: step.Pin.PinNumber,
+			Action:    string(step.Action),
+		})
+	}
+
+	return apiSketchSteps
+}
+
+func apiSketchFromSketch(sketch *Sketch) SketchAPI {
+	apiSketchSteps := apiSketchStepsFromSketchSteps(sketch.Steps)
+	return SketchAPI{
+		Id:    sketch.ID,
+		Name:  sketch.Name,
+		Steps: apiSketchSteps,
+	}
 }
 
 func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +102,8 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(BoardsResponse{Boards: supportedBoards})
 }
+
+// Circuit
 
 func (s *HTTPServer) GetCircuit(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(circuitResponseFromCircuit(s.circuit))
@@ -190,4 +214,28 @@ func (s *HTTPServer) PostAnalogWritePin(w http.ResponseWriter, r *http.Request) 
 	}
 
 	json.NewEncoder(w).Encode(AnalogWritePinResponse{PinNumber: &req.PinNumber, Value: &req.Value})
+}
+
+// Sketch
+
+func (s *HTTPServer) GetSketch(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(apiSketchFromSketch(s.sketch))
+}
+
+func (s *HTTPServer) PostSketch(w http.ResponseWriter, r *http.Request) {
+	var req SketchAPI
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newSketch, err := s.dal.CreateSketch(s.circuit.ID, req.Name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	s.sketch.UpdateFromDBModel(newSketch)
+
+	json.NewEncoder(w).Encode(apiSketchFromSketch(s.sketch))
 }

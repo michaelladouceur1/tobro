@@ -88,11 +88,6 @@ type PinResponse struct {
 	Type         string `json:"type"`
 }
 
-// Pong defines model for Pong.
-type Pong struct {
-	Ping string `json:"ping"`
-}
-
 // SaveCircuitRequest defines model for SaveCircuitRequest.
 type SaveCircuitRequest struct {
 	Id int `json:"id"`
@@ -113,6 +108,22 @@ type SetupPinResponse struct {
 	PinNumber int    `json:"pinNumber"`
 }
 
+// SketchAPI defines model for SketchAPI.
+type SketchAPI struct {
+	Id    int             `json:"id"`
+	Name  string          `json:"name"`
+	Steps []SketchStepAPI `json:"steps"`
+}
+
+// SketchStepAPI defines model for SketchStepAPI.
+type SketchStepAPI struct {
+	Action    string `json:"action"`
+	End       int    `json:"end"`
+	Id        int    `json:"id"`
+	PinNumber int    `json:"pinNumber"`
+	Start     int    `json:"start"`
+}
+
 // PostAnalogWritePinJSONRequestBody defines body for PostAnalogWritePin for application/json ContentType.
 type PostAnalogWritePinJSONRequestBody = AnalogWritePinRequest
 
@@ -130,6 +141,9 @@ type PostSaveCircuitJSONRequestBody = SaveCircuitRequest
 
 // PostSetupPinJSONRequestBody defines body for PostSetupPin for application/json ContentType.
 type PostSetupPinJSONRequestBody = SetupPinRequest
+
+// PostSketchJSONRequestBody defines body for PostSketch for application/json ContentType.
+type PostSketchJSONRequestBody = SketchAPI
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -152,14 +166,17 @@ type ServerInterface interface {
 	// (POST /digital_write_pin)
 	PostDigitalWritePin(w http.ResponseWriter, r *http.Request)
 
-	// (GET /ping)
-	GetPing(w http.ResponseWriter, r *http.Request)
-
 	// (POST /save_circuit)
 	PostSaveCircuit(w http.ResponseWriter, r *http.Request)
 
 	// (POST /setup_pin)
 	PostSetupPin(w http.ResponseWriter, r *http.Request)
+
+	// (GET /sketch)
+	GetSketch(w http.ResponseWriter, r *http.Request)
+
+	// (POST /sketch)
+	PostSketch(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -261,21 +278,6 @@ func (siw *ServerInterfaceWrapper) PostDigitalWritePin(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetPing operation middleware
-func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetPing(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
 // PostSaveCircuit operation middleware
 func (siw *ServerInterfaceWrapper) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -297,6 +299,36 @@ func (siw *ServerInterfaceWrapper) PostSetupPin(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostSetupPin(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetSketch operation middleware
+func (siw *ServerInterfaceWrapper) GetSketch(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSketch(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostSketch operation middleware
+func (siw *ServerInterfaceWrapper) PostSketch(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostSketch(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -431,11 +463,13 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 
 	r.HandleFunc(options.BaseURL+"/digital_write_pin", wrapper.PostDigitalWritePin).Methods("POST")
 
-	r.HandleFunc(options.BaseURL+"/ping", wrapper.GetPing).Methods("GET")
-
 	r.HandleFunc(options.BaseURL+"/save_circuit", wrapper.PostSaveCircuit).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/setup_pin", wrapper.PostSetupPin).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/sketch", wrapper.GetSketch).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/sketch", wrapper.PostSketch).Methods("POST")
 
 	return r
 }
