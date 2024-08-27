@@ -2,15 +2,23 @@ import {Card} from "@mui/material";
 import {useAtomValue} from "jotai";
 import {mainViewAtom} from "../../atoms/mainViewAtom";
 import {Config} from "./Config";
-import {PinList} from "./PinList";
+import {Sketch} from "./Sketch";
+import {useEffect, useMemo} from "react";
 
 export function Main() {
   const mainView = useAtomValue(mainViewAtom);
 
-  const viewMap = {
-    config: <Config />,
-    "pin-list": <PinList />,
-  };
+  const viewMap = useMemo(
+    () => ({
+      config: <Config />,
+      sketch: <Sketch />,
+    }),
+    []
+  );
+
+  useEffect(() => {
+    console.log("Main view changed to", mainView);
+  }, [mainView]);
 
   return (
     <Card variant="outlined" sx={{gridArea: "main", overflowY: "auto"}}>

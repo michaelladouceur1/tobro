@@ -7,10 +7,10 @@ async function watch() {
     bundle: true,
     minify: true,
     format: "cjs",
-    sourcemap: true,
+    sourcemap: false,
     outfile: "./build/output.js",
     plugins: [svgrPlugin()],
-    loader: { ".ts": "ts", ".svg": "file" },
+    loader: { ".ts": "tsx", ".js": "jsx", ".svg": "file" },
   });
   await ctx.watch();
   console.log('Watching...');

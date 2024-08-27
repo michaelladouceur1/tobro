@@ -36,7 +36,7 @@ export function SideNav() {
           </SnButton>
         </SnListItem>
         <SnListItem>
-          <SnButton color="primary" onClick={() => setMainView("pin-list")}>
+          <SnButton color="primary" onClick={() => setMainView("sketch")}>
             <PiWaveformLight size="30px" />
           </SnButton>
         </SnListItem>

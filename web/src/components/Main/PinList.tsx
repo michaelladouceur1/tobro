@@ -14,7 +14,7 @@ export function PinList() {
 
   return (
     // <Card variant="outlined" sx={{gridArea: "main", overflowY: "auto"}}>
-    <List dense={true}>
+    <List className="PIN_LIST_TEST" dense={true}>
       {circuit.pins.map((pin) => (
         <>
           <ListItem key={pin.pinNumber}>
