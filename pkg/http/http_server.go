@@ -1,27 +1,28 @@
-package main
+package http_server
 
 import (
 	"encoding/json"
 	"net/http"
+	"tobro/pkg/constants"
+	"tobro/pkg/models"
+	"tobro/pkg/store"
 )
 
 type HTTPServer struct {
-	session *Session
-	dal     *DAL
-	circuit *Circuit
-	sketch  *Sketch
+	dal     *store.DAL
+	circuit *models.Circuit
+	sketch  *models.Sketch
 }
 
-func NewHTTPServer(session *Session, dal *DAL, circuit *Circuit, sketch *Sketch) *HTTPServer {
+func NewHTTPServer(dal *store.DAL, circuit *models.Circuit, sketch *models.Sketch) *HTTPServer {
 	return &HTTPServer{
-		session: session,
 		dal:     dal,
 		circuit: circuit,
 		sketch:  sketch,
 	}
 }
 
-func pinResponseFromPin(pin Pin) PinResponse {
+func pinResponseFromPin(pin models.Pin) PinResponse {
 	return PinResponse{
 		PinNumber:    pin.PinNumber,
 		Type:         string(pin.PinType),
@@ -35,7 +36,7 @@ func pinResponseFromPin(pin Pin) PinResponse {
 	}
 }
 
-func pinResponseFromPins(pins []Pin) []PinResponse {
+func pinResponseFromPins(pins []models.Pin) []PinResponse {
 	pinResponses := make([]PinResponse, 0)
 	for _, pin := range pins {
 		pinResponses = append(pinResponses, pinResponseFromPin(pin))
@@ -43,7 +44,7 @@ func pinResponseFromPins(pins []Pin) []PinResponse {
 	return pinResponses
 }
 
-func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
+func circuitResponseFromCircuit(circuit *models.Circuit) CircuitResponse {
 	pinResponses := pinResponseFromPins(circuit.Pins)
 	return CircuitResponse{
 		Id:    circuit.ID,
@@ -53,7 +54,7 @@ func circuitResponseFromCircuit(circuit *Circuit) CircuitResponse {
 	}
 }
 
-func apiSketchStepsFromSketchSteps(steps []SketchStep) []SketchStepAPI {
+func apiSketchStepsFromSketchSteps(steps []models.SketchStep) []SketchStepAPI {
 	apiSketchSteps := make([]SketchStepAPI, 0)
 	for _, step := range steps {
 		apiSketchSteps = append(apiSketchSteps, SketchStepAPI{
@@ -68,7 +69,7 @@ func apiSketchStepsFromSketchSteps(steps []SketchStep) []SketchStepAPI {
 	return apiSketchSteps
 }
 
-func apiSketchFromSketch(sketch *Sketch) SketchAPI {
+func apiSketchFromSketch(sketch *models.Sketch) SketchAPI {
 	apiSketchSteps := apiSketchStepsFromSketchSteps(sketch.Steps)
 	return SketchAPI{
 		Id:    sketch.ID,
@@ -90,17 +91,11 @@ func (s *HTTPServer) PostConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.session.UpdatePort(req.Port)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	json.NewEncoder(w).Encode(ConnectResponse{Port: &req.Port})
 }
 
 func (s *HTTPServer) GetBoards(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(BoardsResponse{Boards: supportedBoards})
+	json.NewEncoder(w).Encode(BoardsResponse{Boards: models.GetSupportedBoards()})
 }
 
 // Circuit
@@ -163,7 +158,15 @@ func (s *HTTPServer) PostSetupPin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = pin.SetMode(req.Mode)
+	switch req.Mode {
+	case Input:
+		err = pin.SetMode(constants.PinInput)
+	case Output:
+		err = pin.SetMode(constants.PinOutput)
+	default:
+		http.Error(w, "invalid mode", http.StatusBadRequest)
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

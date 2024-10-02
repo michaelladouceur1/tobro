@@ -8,6 +8,13 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+
+	"tobro/pkg/arduino"
+	tobroHTTP "tobro/pkg/http"
+	"tobro/pkg/models"
+	"tobro/pkg/monitor"
+	"tobro/pkg/store"
+	"tobro/pkg/ws"
 )
 
 //go:embed web/build
@@ -24,21 +31,16 @@ func init() {
 }
 
 func main() {
-	s, err := NewSession("session.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ps := NewPortServer(s)
+	ps := arduino.NewPortServer()
 	log.Print("PortServer created")
 
-	dal := NewDAL()
+	dal := store.NewDAL()
 	if err := dal.Connect(); err != nil {
 		log.Fatal(err)
 	}
 	defer dal.Disconnect()
 
-	c := NewCircuit(0, "Default Circuit", ArduinoNano, ps)
+	c := models.NewCircuit(0, "Default Circuit", models.ArduinoNano, ps)
 	dbCircuit, err := dal.InitCircuit(c)
 	if err != nil {
 		log.Fatal(err)
@@ -46,24 +48,24 @@ func main() {
 
 	c.UpdateFromDBModel(dbCircuit)
 
-	sk := NewSketch(0, "Default Sketch", c)
+	sk := models.NewSketch(0, "Default Sketch", c)
 
-	hs := NewHTTPServer(s, dal, c, sk)
+	hs := tobroHTTP.NewHTTPServer(dal, c, sk)
 
-	hub := NewWSHub()
+	hub := ws.NewWSHub()
 	go hub.Run()
 
-	m := NewMonitor(hub, ps, c)
+	m := monitor.NewMonitor(hub, ps, c)
 	m.Run()
 
 	r := mux.NewRouter()
 
-	r.Use(enableCORS)
-	r.Use(logRequest)
+	r.Use(tobroHTTP.EnableCORS)
+	r.Use(tobroHTTP.LogRequest)
 
-	h := HandlerFromMux(hs, r)
+	h := tobroHTTP.HandlerFromMux(hs, r)
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, ps, w, r)
+		ws.ServeWs(hub, ps, w, r)
 	})
 
 	if os.Getenv("GO_ENV") != "dev" {

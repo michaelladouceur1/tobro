@@ -1,4 +1,4 @@
-package main
+package arduino
 
 import (
 	"encoding/json"
@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"go.bug.st/serial"
+
+	"tobro/pkg/constants"
 )
 
 type PortServer struct {
-	session      *Session
 	Port         serial.Port
 	Connected    chan bool
 	PortName     string
@@ -56,9 +57,8 @@ type AnalogWritePinCommand struct {
 	Value   uint `json:"v"`
 }
 
-func NewPortServer(session *Session) *PortServer {
+func NewPortServer() *PortServer {
 	ps := &PortServer{
-		session:      session,
 		Port:         nil,
 		Connected:    make(chan bool),
 		AvaiblePorts: make(chan []string),
@@ -108,7 +108,7 @@ func (ps *PortServer) OpenPort(port string) error {
 	return nil
 }
 
-func (ps *PortServer) SetupPin(pin int, mode PinMode) error {
+func (ps *PortServer) SetupPin(pin int, mode constants.PinMode) error {
 	command := SetupPinCommand{
 		Command: uint(SetupPinCommandType),
 		Pin:     uint(pin),

@@ -1,18 +1,22 @@
-package main
+package monitor
 
 import (
 	"encoding/json"
 	"log"
 	"time"
+
+	"tobro/pkg/arduino"
+	"tobro/pkg/models"
+	"tobro/pkg/ws"
 )
 
 type Monitor struct {
-	hub     *WSHub
-	ps      *PortServer
-	circuit *Circuit
+	hub     *ws.WSHub
+	ps      *arduino.PortServer
+	circuit *models.Circuit
 }
 
-func NewMonitor(hub *WSHub, ps *PortServer, circuit *Circuit) *Monitor {
+func NewMonitor(hub *ws.WSHub, ps *arduino.PortServer, circuit *models.Circuit) *Monitor {
 	return &Monitor{
 		hub:     hub,
 		ps:      ps,
@@ -28,26 +32,26 @@ func (m *Monitor) Run() {
 
 func (m *Monitor) watchPorts() {
 	for ports := range m.ps.AvaiblePorts {
-		json, err := json.Marshal(createPortsResponse(ports))
+		json, err := json.Marshal(ws.CreatePortsResponse(ports))
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		m.hub.broadcast <- json
+		m.hub.Broadcast <- json
 	}
 }
 
 func (m *Monitor) watchPortConnection() {
 	for {
 		connected := <-m.ps.Connected
-		json, err := json.Marshal(createPortConnectionResponse(connected, m.ps.PortName))
+		json, err := json.Marshal(ws.CreatePortConnectionResponse(connected, m.ps.PortName))
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		m.hub.broadcast <- json
+		m.hub.Broadcast <- json
 	}
 }
 
@@ -59,7 +63,7 @@ func (m *Monitor) watchPinState() {
 		}
 
 		for _, pin := range m.circuit.Pins {
-			go func(pin Pin) {
+			go func(pin models.Pin) {
 				select {
 				case state, ok := <-pin.State:
 					if !ok {
@@ -67,13 +71,13 @@ func (m *Monitor) watchPinState() {
 						return
 					}
 
-					json, err := json.Marshal(createPinStateResponse(pin.PinNumber, state))
+					json, err := json.Marshal(ws.CreatePinStateResponse(pin.PinNumber, state))
 					if err != nil {
 						log.Fatal(err)
 						return
 					}
 
-					m.hub.broadcast <- json
+					m.hub.Broadcast <- json
 				}
 			}(pin)
 		}

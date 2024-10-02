@@ -1,11 +1,11 @@
-package main
+package http_server
 
 import (
 	"log"
 	"net/http"
 )
 
-func enableCORS(next http.Handler) http.Handler {
+func EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -21,7 +21,7 @@ func enableCORS(next http.Handler) http.Handler {
 	})
 }
 
-func logRequest(next http.Handler) http.Handler {
+func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s", r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)

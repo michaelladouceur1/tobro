@@ -1,4 +1,4 @@
-package main
+package ws
 
 import "github.com/gorilla/websocket"
 
@@ -18,7 +18,7 @@ func (c *WSClient) Read() {
 		if err != nil {
 			break
 		}
-		c.hub.broadcast <- message
+		c.hub.Broadcast <- message
 	}
 }
 

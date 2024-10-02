@@ -1,18 +1,18 @@
-package main
+package ws
 
 type WSHub struct {
 	clients    map[*WSClient]bool
-	broadcast  chan []byte
 	register   chan *WSClient
 	unregister chan *WSClient
+	Broadcast  chan []byte
 }
 
 func NewWSHub() *WSHub {
 	return &WSHub{
 		clients:    make(map[*WSClient]bool),
-		broadcast:  make(chan []byte),
 		register:   make(chan *WSClient),
 		unregister: make(chan *WSClient),
+		Broadcast:  make(chan []byte),
 	}
 }
 
@@ -26,7 +26,7 @@ func (h *WSHub) Run() {
 				delete(h.clients, client)
 				close(client.send)
 			}
-		case message := <-h.broadcast:
+		case message := <-h.Broadcast:
 			for client := range h.clients {
 				select {
 				case client.send <- message:

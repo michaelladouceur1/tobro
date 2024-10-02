@@ -1,4 +1,4 @@
-package main
+package ws
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+
+	"tobro/pkg/arduino"
 )
 
 type SuccessResponse struct {
@@ -31,7 +33,7 @@ type PinStateResponseData struct {
 	State     int `json:"state"`
 }
 
-func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
+func CreatePortsResponse(ports []string) BaseResponse[PortsResponseData] {
 	return BaseResponse[PortsResponseData]{
 		Type: "ports",
 		Data: PortsResponseData{
@@ -40,7 +42,7 @@ func createPortsResponse(ports []string) BaseResponse[PortsResponseData] {
 	}
 }
 
-func createPortConnectionResponse(connected bool, portName string) BaseResponse[PortConnectionResponseData] {
+func CreatePortConnectionResponse(connected bool, portName string) BaseResponse[PortConnectionResponseData] {
 	return BaseResponse[PortConnectionResponseData]{
 		Type: "port_connection",
 		Data: PortConnectionResponseData{
@@ -50,7 +52,7 @@ func createPortConnectionResponse(connected bool, portName string) BaseResponse[
 	}
 }
 
-func createPinStateResponse(pinNumber int, state int) BaseResponse[PinStateResponseData] {
+func CreatePinStateResponse(pinNumber int, state int) BaseResponse[PinStateResponseData] {
 	return BaseResponse[PinStateResponseData]{
 		Type: "pin_state",
 		Data: PinStateResponseData{
@@ -72,7 +74,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func serveWs(hub *WSHub, ps *PortServer, w http.ResponseWriter, r *http.Request) {
+func ServeWs(hub *WSHub, ps *arduino.PortServer, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print(err)
@@ -88,14 +90,14 @@ func serveWs(hub *WSHub, ps *PortServer, w http.ResponseWriter, r *http.Request)
 	go client.Read()
 }
 
-func SendPortName(hub *WSHub, ps *PortServer) error {
+func SendPortName(hub *WSHub, ps *arduino.PortServer) error {
 	connected := ps.PortName != ""
-	json, err := json.Marshal(createPortConnectionResponse(connected, ps.PortName))
+	json, err := json.Marshal(CreatePortConnectionResponse(connected, ps.PortName))
 	if err != nil {
 		return err
 	}
 
-	hub.broadcast <- json
+	hub.Broadcast <- json
 
 	return nil
 }

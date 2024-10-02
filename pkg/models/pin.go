@@ -1,43 +1,28 @@
-package main
+package models
 
 import (
 	"encoding/json"
 	"tobro/db"
-)
-
-type PinType string
-type PinMode int
-
-const (
-	PinAnalog  PinType = "analog"
-	PinDigital PinType = "digital"
-
-	PinInput  PinMode = 0
-	PinOutput PinMode = 1
-
-	DigitalPinLow  = 0
-	DigitalPinHigh = 1
-
-	AnalogPinMin = 0
-	AnalogPinMax = 255
+	"tobro/pkg/arduino"
+	"tobro/pkg/constants"
 )
 
 type Pin struct {
-	PortServer   *PortServer
+	PortServer   *arduino.PortServer
 	PinNumber    int
-	PinType      PinType
+	PinType      constants.PinType
 	Min          int
 	Max          int
 	DigitalRead  bool
 	DigitalWrite bool
 	AnalogRead   bool
 	AnalogWrite  bool
-	Mode         PinMode
+	Mode         constants.PinMode
 	State        chan int
 }
 
 type PinConfig struct {
-	PinType      PinType
+	PinType      constants.PinType
 	DigitalRead  bool
 	DigitalWrite bool
 	AnalogRead   bool
@@ -54,12 +39,12 @@ type AnalogWritePin interface {
 	SetAnalogState(state int) error
 }
 
-func NewPin(ps *PortServer, pinNumber int, config PinConfig) *Pin {
+func NewPin(ps *arduino.PortServer, pinNumber int, config PinConfig) *Pin {
 	var min, max int
 	if config.AnalogWrite || config.AnalogRead {
-		min, max = AnalogPinMin, AnalogPinMax
+		min, max = constants.AnalogPinMin, constants.AnalogPinMax
 	} else {
-		min, max = DigitalPinLow, DigitalPinHigh
+		min, max = constants.DigitalPinLow, constants.DigitalPinHigh
 	}
 
 	return &Pin{
@@ -72,13 +57,13 @@ func NewPin(ps *PortServer, pinNumber int, config PinConfig) *Pin {
 		DigitalWrite: config.DigitalWrite,
 		AnalogRead:   config.AnalogRead,
 		AnalogWrite:  config.AnalogWrite,
-		Mode:         PinInput,
+		Mode:         constants.PinInput,
 		State:        make(chan int),
 	}
 }
 
 func (p *Pin) UpdateFromDBModel(model *db.PinDBModel) {
-	p.Mode = PinMode(model.Mode)
+	p.Mode = constants.PinMode(model.Mode)
 }
 
 func (p *Pin) MarshalJSON() ([]byte, error) {
@@ -95,23 +80,13 @@ func (p *Pin) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (p *Pin) SetMode(mode SetupPinRequestMode) error {
-	var pinMode PinMode
-	switch mode {
-	case Input:
-		pinMode = PinInput
-	case Output:
-		pinMode = PinOutput
-	default:
-		return &InvalidModeError{}
-	}
-
-	err := p.PortServer.SetupPin(p.PinNumber, pinMode)
+func (p *Pin) SetMode(mode constants.PinMode) error {
+	err := p.PortServer.SetupPin(p.PinNumber, mode)
 	if err != nil {
 		return err
 	}
 
-	p.Mode = pinMode
+	p.Mode = mode
 
 	return nil
 }
@@ -121,7 +96,7 @@ func (p *Pin) High() error {
 		return &DigitalWriteNotSupportedError{}
 	}
 
-	err := p.PortServer.WriteDigitalPin(p.PinNumber, DigitalPinHigh)
+	err := p.PortServer.WriteDigitalPin(p.PinNumber, constants.DigitalPinHigh)
 	if err != nil {
 		return err
 	}
@@ -136,7 +111,7 @@ func (p *Pin) Low() error {
 		return &DigitalWriteNotSupportedError{}
 	}
 
-	err := p.PortServer.WriteDigitalPin(p.PinNumber, DigitalPinLow)
+	err := p.PortServer.WriteDigitalPin(p.PinNumber, constants.DigitalPinLow)
 	if err != nil {
 		return err
 	}
@@ -172,9 +147,9 @@ func (p *Pin) SetDigitalState(state int) error {
 
 	var err error
 	switch state {
-	case DigitalPinLow:
+	case constants.DigitalPinLow:
 		err = p.Low()
-	case DigitalPinHigh:
+	case constants.DigitalPinHigh:
 		err = p.High()
 	default:
 		return &InvalidDigitalStateError{}

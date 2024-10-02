@@ -1,7 +1,9 @@
-package main
+package models
 
 import (
 	"tobro/db"
+	"tobro/pkg/arduino"
+	"tobro/pkg/constants"
 )
 
 // arduino nano pinout
@@ -21,18 +23,18 @@ const (
 )
 
 type Circuit struct {
-	portServer *PortServer
+	portServer *arduino.PortServer
 	ID         int
 	Name       string
 	Board      SupportedBoards
 	Pins       []Pin
 }
 
-func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) *Circuit {
+func NewCircuit(id int, name string, boardType SupportedBoards, ps *arduino.PortServer) *Circuit {
 	switch boardType {
 	case ArduinoNano:
 		digitalPinConfig := PinConfig{
-			PinType:      PinDigital,
+			PinType:      constants.PinDigital,
 			DigitalRead:  true,
 			DigitalWrite: true,
 			AnalogRead:   false,
@@ -40,7 +42,7 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 		}
 
 		digitalPwmPinConfig := PinConfig{
-			PinType:      PinDigital,
+			PinType:      constants.PinDigital,
 			DigitalRead:  true,
 			DigitalWrite: true,
 			AnalogRead:   false,
@@ -48,7 +50,7 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 		}
 
 		analogDigitalPinConfig := PinConfig{
-			PinType:      PinAnalog,
+			PinType:      constants.PinAnalog,
 			DigitalRead:  true,
 			DigitalWrite: true,
 			AnalogRead:   true,
@@ -56,7 +58,7 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 		}
 
 		analogPinConfig := PinConfig{
-			PinType:      PinAnalog,
+			PinType:      constants.PinAnalog,
 			DigitalRead:  false,
 			DigitalWrite: false,
 			AnalogRead:   true,
@@ -98,6 +100,10 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *PortServer) 
 	default:
 		return nil
 	}
+}
+
+func GetSupportedBoards() []string {
+	return supportedBoards
 }
 
 func SupportedBoardPins(board string) ([]Pin, error) {
