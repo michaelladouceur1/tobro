@@ -22,7 +22,7 @@ type SketchStep struct {
 	Action models.SketchAction
 }
 
-func NewSketch(id int, name string, c *circuit.Circuit) *Sketch {
+func New(id int, name string, c *circuit.Circuit) *Sketch {
 	return &Sketch{
 		ID:      id,
 		Name:    name,

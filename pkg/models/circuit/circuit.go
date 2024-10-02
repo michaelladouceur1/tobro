@@ -21,7 +21,7 @@ type Circuit struct {
 	Pins       []pin.Pin
 }
 
-func NewCircuit(id int, name string, boardType models.SupportedBoards, ps *arduino.PortServer) *Circuit {
+func New(id int, name string, boardType models.SupportedBoards, ps *arduino.PortServer) *Circuit {
 	switch boardType {
 	case models.ArduinoNano:
 		digitalPinConfig := pin.PinConfig{
@@ -62,26 +62,26 @@ func NewCircuit(id int, name string, boardType models.SupportedBoards, ps *ardui
 			Name:       name,
 			Board:      models.ArduinoNano,
 			Pins: []pin.Pin{
-				*pin.NewPin(ps, 2, digitalPinConfig),
-				*pin.NewPin(ps, 3, digitalPwmPinConfig),
-				*pin.NewPin(ps, 4, digitalPinConfig),
-				*pin.NewPin(ps, 5, digitalPwmPinConfig),
-				*pin.NewPin(ps, 6, digitalPwmPinConfig),
-				*pin.NewPin(ps, 7, digitalPinConfig),
-				*pin.NewPin(ps, 8, digitalPinConfig),
-				*pin.NewPin(ps, 9, digitalPwmPinConfig),
-				*pin.NewPin(ps, 10, digitalPwmPinConfig),
-				*pin.NewPin(ps, 11, digitalPwmPinConfig),
-				*pin.NewPin(ps, 12, digitalPinConfig),
-				*pin.NewPin(ps, 13, digitalPinConfig),
-				*pin.NewPin(ps, 14, analogDigitalPinConfig),
-				*pin.NewPin(ps, 15, analogDigitalPinConfig),
-				*pin.NewPin(ps, 16, analogDigitalPinConfig),
-				*pin.NewPin(ps, 17, analogDigitalPinConfig),
-				*pin.NewPin(ps, 18, analogDigitalPinConfig),
-				*pin.NewPin(ps, 19, analogDigitalPinConfig),
-				*pin.NewPin(ps, 20, analogPinConfig),
-				*pin.NewPin(ps, 21, analogPinConfig),
+				*pin.New(ps, 2, digitalPinConfig),
+				*pin.New(ps, 3, digitalPwmPinConfig),
+				*pin.New(ps, 4, digitalPinConfig),
+				*pin.New(ps, 5, digitalPwmPinConfig),
+				*pin.New(ps, 6, digitalPwmPinConfig),
+				*pin.New(ps, 7, digitalPinConfig),
+				*pin.New(ps, 8, digitalPinConfig),
+				*pin.New(ps, 9, digitalPwmPinConfig),
+				*pin.New(ps, 10, digitalPwmPinConfig),
+				*pin.New(ps, 11, digitalPwmPinConfig),
+				*pin.New(ps, 12, digitalPinConfig),
+				*pin.New(ps, 13, digitalPinConfig),
+				*pin.New(ps, 14, analogDigitalPinConfig),
+				*pin.New(ps, 15, analogDigitalPinConfig),
+				*pin.New(ps, 16, analogDigitalPinConfig),
+				*pin.New(ps, 17, analogDigitalPinConfig),
+				*pin.New(ps, 18, analogDigitalPinConfig),
+				*pin.New(ps, 19, analogDigitalPinConfig),
+				*pin.New(ps, 20, analogPinConfig),
+				*pin.New(ps, 21, analogPinConfig),
 			},
 		}
 
@@ -98,7 +98,7 @@ func GetSupportedBoards() []string {
 }
 
 func SupportedBoardPins(board string) ([]pin.Pin, error) {
-	circuit := NewCircuit(0, "", models.SupportedBoards(board), nil)
+	circuit := New(0, "", models.SupportedBoards(board), nil)
 	if circuit == nil {
 		return nil, &UnsupportedBoardError{}
 	}

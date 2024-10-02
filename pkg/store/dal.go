@@ -13,7 +13,7 @@ type DAL struct {
 	client *db.PrismaClient
 }
 
-func NewDAL() *DAL {
+func New() *DAL {
 	return &DAL{
 		ctx:    context.Background(),
 		client: db.NewClient(),

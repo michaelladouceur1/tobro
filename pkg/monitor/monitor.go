@@ -17,7 +17,7 @@ type Monitor struct {
 	circuit *circuit.Circuit
 }
 
-func NewMonitor(hub *ws.WSHub, ps *arduino.PortServer, circuit *circuit.Circuit) *Monitor {
+func New(hub *ws.WSHub, ps *arduino.PortServer, circuit *circuit.Circuit) *Monitor {
 	return &Monitor{
 		hub:     hub,
 		ps:      ps,

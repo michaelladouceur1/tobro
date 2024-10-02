@@ -39,7 +39,7 @@ type AnalogWritePin interface {
 	SetAnalogState(state int) error
 }
 
-func NewPin(ps *arduino.PortServer, pinNumber int, config PinConfig) *Pin {
+func New(ps *arduino.PortServer, pinNumber int, config PinConfig) *Pin {
 	var min, max int
 	if config.AnalogWrite || config.AnalogRead {
 		min, max = models.AnalogPinMin, models.AnalogPinMax

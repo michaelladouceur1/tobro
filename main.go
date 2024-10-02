@@ -33,31 +33,31 @@ func init() {
 }
 
 func main() {
-	ps := arduino.NewPortServer()
+	ps := arduino.NewServer()
 	log.Print("PortServer created")
 
-	dal := store.NewDAL()
-	if err := dal.Connect(); err != nil {
+	st := store.New()
+	if err := st.Connect(); err != nil {
 		log.Fatal(err)
 	}
-	defer dal.Disconnect()
+	defer st.Disconnect()
 
-	c := circuit.NewCircuit(0, "Default Circuit", models.ArduinoNano, ps)
-	dbCircuit, err := dal.InitCircuit(c)
+	c := circuit.New(0, "Default Circuit", models.ArduinoNano, ps)
+	dbCircuit, err := st.InitCircuit(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	c.UpdateFromDBModel(dbCircuit)
 
-	sk := sketch.NewSketch(0, "Default Sketch", c)
+	sk := sketch.New(0, "Default Sketch", c)
 
-	hs := tobroHTTP.NewHTTPServer(dal, c, sk)
+	hs := tobroHTTP.NewHTTPServer(st, c, sk)
 
 	hub := ws.NewWSHub()
 	go hub.Run()
 
-	m := monitor.NewMonitor(hub, ps, c)
+	m := monitor.New(hub, ps, c)
 	m.Run()
 
 	r := mux.NewRouter()

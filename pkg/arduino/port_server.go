@@ -57,7 +57,7 @@ type AnalogWritePinCommand struct {
 	Value   uint `json:"v"`
 }
 
-func NewPortServer() *PortServer {
+func NewServer() *PortServer {
 	ps := &PortServer{
 		Port:         nil,
 		Connected:    make(chan bool),
