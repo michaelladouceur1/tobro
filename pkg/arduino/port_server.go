@@ -8,7 +8,7 @@ import (
 
 	"go.bug.st/serial"
 
-	"tobro/pkg/constants"
+	"tobro/pkg/models"
 )
 
 type PortServer struct {
@@ -108,7 +108,7 @@ func (ps *PortServer) OpenPort(port string) error {
 	return nil
 }
 
-func (ps *PortServer) SetupPin(pin int, mode constants.PinMode) error {
+func (ps *PortServer) SetupPin(pin int, mode models.PinMode) error {
 	command := SetupPinCommand{
 		Command: uint(SetupPinCommandType),
 		Pin:     uint(pin),

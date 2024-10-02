@@ -1,9 +1,14 @@
-package models
+package sketch
 
-import "tobro/db"
+import (
+	"tobro/db"
+	"tobro/pkg/models"
+	"tobro/pkg/models/circuit"
+	"tobro/pkg/models/pin"
+)
 
 type Sketch struct {
-	Circuit *Circuit
+	Circuit *circuit.Circuit
 	ID      int
 	Name    string
 	Steps   []SketchStep
@@ -13,18 +18,11 @@ type SketchStep struct {
 	ID     int
 	Start  int
 	End    int
-	Pin    *Pin
-	Action SketchAction
+	Pin    *pin.Pin
+	Action models.SketchAction
 }
 
-type SketchAction string
-
-const (
-	DigitalWrite SketchAction = "digital_write"
-	AnalogWrite  SketchAction = "analog_write"
-)
-
-func NewSketch(id int, name string, c *Circuit) *Sketch {
+func NewSketch(id int, name string, c *circuit.Circuit) *Sketch {
 	return &Sketch{
 		ID:      id,
 		Name:    name,
@@ -48,7 +46,7 @@ func (s *Sketch) UpdateFromDBModel(model *db.SketchDBModel) {
 			Start:  step.Start,
 			End:    step.End,
 			Pin:    pin,
-			Action: SketchAction(step.Action),
+			Action: models.SketchAction(step.Action),
 		})
 	}
 }

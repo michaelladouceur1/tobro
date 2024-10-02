@@ -1,9 +1,10 @@
-package models
+package circuit
 
 import (
 	"tobro/db"
 	"tobro/pkg/arduino"
-	"tobro/pkg/constants"
+	"tobro/pkg/models"
+	"tobro/pkg/models/pin"
 )
 
 // arduino nano pinout
@@ -12,53 +13,43 @@ import (
 // analog pins: A6, A7
 // pwm pins: 3, 5, 6, 9, 10, 11
 
-type SupportedBoards string
-
-var supportedBoards = []string{
-	string(ArduinoNano),
-}
-
-const (
-	ArduinoNano SupportedBoards = "arduino_nano"
-)
-
 type Circuit struct {
 	portServer *arduino.PortServer
 	ID         int
 	Name       string
-	Board      SupportedBoards
-	Pins       []Pin
+	Board      models.SupportedBoards
+	Pins       []pin.Pin
 }
 
-func NewCircuit(id int, name string, boardType SupportedBoards, ps *arduino.PortServer) *Circuit {
+func NewCircuit(id int, name string, boardType models.SupportedBoards, ps *arduino.PortServer) *Circuit {
 	switch boardType {
-	case ArduinoNano:
-		digitalPinConfig := PinConfig{
-			PinType:      constants.PinDigital,
+	case models.ArduinoNano:
+		digitalPinConfig := pin.PinConfig{
+			PinType:      models.PinDigital,
 			DigitalRead:  true,
 			DigitalWrite: true,
 			AnalogRead:   false,
 			AnalogWrite:  false,
 		}
 
-		digitalPwmPinConfig := PinConfig{
-			PinType:      constants.PinDigital,
+		digitalPwmPinConfig := pin.PinConfig{
+			PinType:      models.PinDigital,
 			DigitalRead:  true,
 			DigitalWrite: true,
 			AnalogRead:   false,
 			AnalogWrite:  true,
 		}
 
-		analogDigitalPinConfig := PinConfig{
-			PinType:      constants.PinAnalog,
+		analogDigitalPinConfig := pin.PinConfig{
+			PinType:      models.PinAnalog,
 			DigitalRead:  true,
 			DigitalWrite: true,
 			AnalogRead:   true,
 			AnalogWrite:  true,
 		}
 
-		analogPinConfig := PinConfig{
-			PinType:      constants.PinAnalog,
+		analogPinConfig := pin.PinConfig{
+			PinType:      models.PinAnalog,
 			DigitalRead:  false,
 			DigitalWrite: false,
 			AnalogRead:   true,
@@ -69,28 +60,28 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *arduino.Port
 			portServer: ps,
 			ID:         id,
 			Name:       name,
-			Board:      ArduinoNano,
-			Pins: []Pin{
-				*NewPin(ps, 2, digitalPinConfig),
-				*NewPin(ps, 3, digitalPwmPinConfig),
-				*NewPin(ps, 4, digitalPinConfig),
-				*NewPin(ps, 5, digitalPwmPinConfig),
-				*NewPin(ps, 6, digitalPwmPinConfig),
-				*NewPin(ps, 7, digitalPinConfig),
-				*NewPin(ps, 8, digitalPinConfig),
-				*NewPin(ps, 9, digitalPwmPinConfig),
-				*NewPin(ps, 10, digitalPwmPinConfig),
-				*NewPin(ps, 11, digitalPwmPinConfig),
-				*NewPin(ps, 12, digitalPinConfig),
-				*NewPin(ps, 13, digitalPinConfig),
-				*NewPin(ps, 14, analogDigitalPinConfig),
-				*NewPin(ps, 15, analogDigitalPinConfig),
-				*NewPin(ps, 16, analogDigitalPinConfig),
-				*NewPin(ps, 17, analogDigitalPinConfig),
-				*NewPin(ps, 18, analogDigitalPinConfig),
-				*NewPin(ps, 19, analogDigitalPinConfig),
-				*NewPin(ps, 20, analogPinConfig),
-				*NewPin(ps, 21, analogPinConfig),
+			Board:      models.ArduinoNano,
+			Pins: []pin.Pin{
+				*pin.NewPin(ps, 2, digitalPinConfig),
+				*pin.NewPin(ps, 3, digitalPwmPinConfig),
+				*pin.NewPin(ps, 4, digitalPinConfig),
+				*pin.NewPin(ps, 5, digitalPwmPinConfig),
+				*pin.NewPin(ps, 6, digitalPwmPinConfig),
+				*pin.NewPin(ps, 7, digitalPinConfig),
+				*pin.NewPin(ps, 8, digitalPinConfig),
+				*pin.NewPin(ps, 9, digitalPwmPinConfig),
+				*pin.NewPin(ps, 10, digitalPwmPinConfig),
+				*pin.NewPin(ps, 11, digitalPwmPinConfig),
+				*pin.NewPin(ps, 12, digitalPinConfig),
+				*pin.NewPin(ps, 13, digitalPinConfig),
+				*pin.NewPin(ps, 14, analogDigitalPinConfig),
+				*pin.NewPin(ps, 15, analogDigitalPinConfig),
+				*pin.NewPin(ps, 16, analogDigitalPinConfig),
+				*pin.NewPin(ps, 17, analogDigitalPinConfig),
+				*pin.NewPin(ps, 18, analogDigitalPinConfig),
+				*pin.NewPin(ps, 19, analogDigitalPinConfig),
+				*pin.NewPin(ps, 20, analogPinConfig),
+				*pin.NewPin(ps, 21, analogPinConfig),
 			},
 		}
 
@@ -103,11 +94,11 @@ func NewCircuit(id int, name string, boardType SupportedBoards, ps *arduino.Port
 }
 
 func GetSupportedBoards() []string {
-	return supportedBoards
+	return models.SupportedBoardsList
 }
 
-func SupportedBoardPins(board string) ([]Pin, error) {
-	circuit := NewCircuit(0, "", SupportedBoards(board), nil)
+func SupportedBoardPins(board string) ([]pin.Pin, error) {
+	circuit := NewCircuit(0, "", models.SupportedBoards(board), nil)
 	if circuit == nil {
 		return nil, &UnsupportedBoardError{}
 	}
@@ -128,7 +119,7 @@ func (c *Circuit) Connect(port string) error {
 func (c *Circuit) UpdateFromDBModel(model *db.CircuitDBModel) {
 	c.ID = model.ID
 	c.Name = model.Name
-	c.Board = SupportedBoards(model.Board)
+	c.Board = models.SupportedBoards(model.Board)
 
 	pins := model.Pins()
 	for _, pin := range pins {
@@ -141,7 +132,7 @@ func (c *Circuit) UpdateFromDBModel(model *db.CircuitDBModel) {
 	}
 }
 
-func (c *Circuit) GetPin(pinNumber int) (*Pin, error) {
+func (c *Circuit) GetPin(pinNumber int) (*pin.Pin, error) {
 	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {
 			return &c.Pins[i], nil
@@ -151,8 +142,8 @@ func (c *Circuit) GetPin(pinNumber int) (*Pin, error) {
 	return nil, &PinNotFoundError{}
 }
 
-func (c *Circuit) GetPins() []*Pin {
-	var pins []*Pin
+func (c *Circuit) GetPins() []*pin.Pin {
+	var pins []*pin.Pin
 	for _, p := range c.Pins {
 		pins = append(pins, &p)
 	}
@@ -160,7 +151,7 @@ func (c *Circuit) GetPins() []*Pin {
 	return pins
 }
 
-func (c *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
+func (c *Circuit) GetDigitalWritePin(pinNumber int) (pin.DigitalWritePin, error) {
 	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {
 			if p.DigitalWrite {
@@ -175,7 +166,7 @@ func (c *Circuit) GetDigitalWritePin(pinNumber int) (DigitalWritePin, error) {
 	return nil, &PinNotFoundError{}
 }
 
-func (c *Circuit) GetAnalogWritePin(pinNumber int) (AnalogWritePin, error) {
+func (c *Circuit) GetAnalogWritePin(pinNumber int) (pin.AnalogWritePin, error) {
 	for i, p := range c.Pins {
 		if p.PinNumber == pinNumber {
 			if p.AnalogWrite {

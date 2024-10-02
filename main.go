@@ -12,6 +12,8 @@ import (
 	"tobro/pkg/arduino"
 	tobroHTTP "tobro/pkg/http"
 	"tobro/pkg/models"
+	"tobro/pkg/models/circuit"
+	"tobro/pkg/models/sketch"
 	"tobro/pkg/monitor"
 	"tobro/pkg/store"
 	"tobro/pkg/ws"
@@ -40,7 +42,7 @@ func main() {
 	}
 	defer dal.Disconnect()
 
-	c := models.NewCircuit(0, "Default Circuit", models.ArduinoNano, ps)
+	c := circuit.NewCircuit(0, "Default Circuit", models.ArduinoNano, ps)
 	dbCircuit, err := dal.InitCircuit(c)
 	if err != nil {
 		log.Fatal(err)
@@ -48,7 +50,7 @@ func main() {
 
 	c.UpdateFromDBModel(dbCircuit)
 
-	sk := models.NewSketch(0, "Default Sketch", c)
+	sk := sketch.NewSketch(0, "Default Sketch", c)
 
 	hs := tobroHTTP.NewHTTPServer(dal, c, sk)
 

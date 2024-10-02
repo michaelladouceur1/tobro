@@ -4,7 +4,8 @@ import (
 	"context"
 	"log"
 	"tobro/db"
-	"tobro/pkg/models"
+	"tobro/pkg/models/circuit"
+	"tobro/pkg/models/pin"
 )
 
 type DAL struct {
@@ -29,7 +30,7 @@ func (d *DAL) Disconnect() {
 
 // Circuit
 
-func (d *DAL) InitCircuit(circuit *models.Circuit) (*db.CircuitDBModel, error) {
+func (d *DAL) InitCircuit(circuit *circuit.Circuit) (*db.CircuitDBModel, error) {
 	dbCircuit, err := d.client.CircuitDB.FindFirst().With(db.CircuitDB.Pins.Fetch()).Exec(d.ctx)
 	if err != nil {
 		if err.Error() == "Error: Record not found" {
@@ -55,7 +56,7 @@ func (d *DAL) CreateCircuit(name string, board string) (*db.CircuitDBModel, erro
 		return nil, err
 	}
 
-	pins, err := models.SupportedBoardPins(board)
+	pins, err := circuit.SupportedBoardPins(board)
 	if err != nil {
 		log.Print(err)
 		return nil, err
@@ -66,7 +67,7 @@ func (d *DAL) CreateCircuit(name string, board string) (*db.CircuitDBModel, erro
 	return d.GetCircuitByID(newCircuit.ID)
 }
 
-func (d *DAL) SaveCircuit(circuit models.Circuit) (*db.CircuitDBModel, error) {
+func (d *DAL) SaveCircuit(circuit circuit.Circuit) (*db.CircuitDBModel, error) {
 	_, err := d.client.CircuitDB.FindUnique(db.CircuitDB.ID.Equals(circuit.ID)).Update(
 		db.CircuitDB.Name.Set(circuit.Name),
 		db.CircuitDB.Board.Set(string(circuit.Board)),
@@ -89,14 +90,14 @@ func (d *DAL) SaveCircuit(circuit models.Circuit) (*db.CircuitDBModel, error) {
 	return d.GetCircuitByID(circuit.ID)
 }
 
-func (d *DAL) AddPin(circuitID int, pin models.Pin) (*db.PinDBModel, error) {
+func (d *DAL) AddPin(circuitID int, pin pin.Pin) (*db.PinDBModel, error) {
 	return d.client.PinDB.CreateOne(
 		db.PinDB.PinNumber.Set(pin.PinNumber),
 		db.PinDB.Circuit.Link(db.CircuitDB.ID.Equals(circuitID)),
 		db.PinDB.Mode.Set(int(pin.Mode))).Exec(d.ctx)
 }
 
-func (d *DAL) AddPins(circuitID int, pins []models.Pin) ([]*db.PinDBModel, error) {
+func (d *DAL) AddPins(circuitID int, pins []pin.Pin) ([]*db.PinDBModel, error) {
 	var pinModels []*db.PinDBModel
 	for _, pin := range pins {
 		pinModel, err := d.AddPin(circuitID, pin)

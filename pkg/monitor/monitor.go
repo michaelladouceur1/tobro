@@ -6,17 +6,18 @@ import (
 	"time"
 
 	"tobro/pkg/arduino"
-	"tobro/pkg/models"
+	"tobro/pkg/models/circuit"
+	"tobro/pkg/models/pin"
 	"tobro/pkg/ws"
 )
 
 type Monitor struct {
 	hub     *ws.WSHub
 	ps      *arduino.PortServer
-	circuit *models.Circuit
+	circuit *circuit.Circuit
 }
 
-func NewMonitor(hub *ws.WSHub, ps *arduino.PortServer, circuit *models.Circuit) *Monitor {
+func NewMonitor(hub *ws.WSHub, ps *arduino.PortServer, circuit *circuit.Circuit) *Monitor {
 	return &Monitor{
 		hub:     hub,
 		ps:      ps,
@@ -62,16 +63,16 @@ func (m *Monitor) watchPinState() {
 			continue
 		}
 
-		for _, pin := range m.circuit.Pins {
-			go func(pin models.Pin) {
+		for _, p := range m.circuit.Pins {
+			go func(p pin.Pin) {
 				select {
-				case state, ok := <-pin.State:
+				case state, ok := <-p.State:
 					if !ok {
-						log.Printf("Pin %d state channel is closed", pin.PinNumber)
+						log.Printf("Pin %d state channel is closed", p.PinNumber)
 						return
 					}
 
-					json, err := json.Marshal(ws.CreatePinStateResponse(pin.PinNumber, state))
+					json, err := json.Marshal(ws.CreatePinStateResponse(p.PinNumber, state))
 					if err != nil {
 						log.Fatal(err)
 						return
@@ -79,7 +80,7 @@ func (m *Monitor) watchPinState() {
 
 					m.hub.Broadcast <- json
 				}
-			}(pin)
+			}(p)
 		}
 
 		time.Sleep(10 * time.Millisecond)
