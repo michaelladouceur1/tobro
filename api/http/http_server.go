@@ -11,14 +11,14 @@ import (
 )
 
 type HTTPServer struct {
-	dal     *store.DAL
+	store   *store.Store
 	circuit *circuit.Circuit
 	sketch  *sketch.Sketch
 }
 
-func NewHTTPServer(dal *store.DAL, circuit *circuit.Circuit, sketch *sketch.Sketch) *HTTPServer {
+func NewHTTPServer(store *store.Store, circuit *circuit.Circuit, sketch *sketch.Sketch) *HTTPServer {
 	return &HTTPServer{
-		dal:     dal,
+		store:   store,
 		circuit: circuit,
 		sketch:  sketch,
 	}
@@ -113,7 +113,7 @@ func (s *HTTPServer) PostCircuit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newCircuit, err := s.dal.CreateCircuit(req.Name, req.Board)
+	newCircuit, err := s.store.CreateCircuit(req.Name, req.Board)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -136,7 +136,7 @@ func (s *HTTPServer) PostSaveCircuit(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	newCircuit, err := s.dal.SaveCircuit(*s.circuit)
+	newCircuit, err := s.store.SaveCircuit(*s.circuit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -234,7 +234,7 @@ func (s *HTTPServer) PostSketch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newSketch, err := s.dal.CreateSketch(s.circuit.ID, req.Name)
+	newSketch, err := s.store.CreateSketch(s.circuit.ID, req.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

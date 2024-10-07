@@ -40,9 +40,9 @@ func main() {
 	}
 	defer st.Disconnect()
 
-	ps := arduino.NewServer()
+	a := arduino.NewServer()
 
-	c := circuit.New(0, "Default Circuit", models.ArduinoNano, ps)
+	c := circuit.New(0, "Default Circuit", models.ArduinoNano, a)
 	dbCircuit, err := st.InitCircuit(c)
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +57,7 @@ func main() {
 	hub := ws.NewWSHub()
 	go hub.Run()
 
-	m := monitor.New(hub, ps, c)
+	m := monitor.New(hub, a, c)
 	m.Run()
 
 	r := mux.NewRouter()
@@ -67,7 +67,7 @@ func main() {
 
 	h := thttp.HandlerFromMux(hs, r)
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		ws.ServeWs(hub, ps, w, r)
+		ws.ServeWs(hub, a, w, r)
 	})
 
 	if os.Getenv("GO_ENV") != "dev" {
