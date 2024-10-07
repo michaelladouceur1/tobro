@@ -33,7 +33,11 @@ func (m *Monitor) Run() {
 
 func (m *Monitor) watchPorts() {
 	for ports := range m.ps.AvaiblePorts {
-		json, err := json.Marshal(ws.CreatePortsResponse(ports))
+		portNames := make([]string, 0, len(ports))
+		for _, port := range ports {
+			portNames = append(portNames, port.Name)
+		}
+		json, err := json.Marshal(ws.CreatePortsResponse(portNames))
 		if err != nil {
 			log.Fatal(err)
 			return

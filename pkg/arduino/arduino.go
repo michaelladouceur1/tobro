@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.bug.st/serial"
+	"go.bug.st/serial/enumerator"
 
 	"tobro/pkg/models"
 )
@@ -15,7 +16,7 @@ type PortServer struct {
 	Port         serial.Port
 	Connected    chan bool
 	PortName     string
-	AvaiblePorts chan []string
+	AvaiblePorts chan []*enumerator.PortDetails
 	Settings     serial.Mode
 }
 
@@ -61,7 +62,7 @@ func NewServer() *PortServer {
 	ps := &PortServer{
 		Port:         nil,
 		Connected:    make(chan bool),
-		AvaiblePorts: make(chan []string),
+		AvaiblePorts: make(chan []*enumerator.PortDetails),
 		Settings: serial.Mode{
 			BaudRate: 115200,
 		},
@@ -225,12 +226,16 @@ func (ps *PortServer) ListenToPort() chan ListenToPortResult {
 
 func (ps *PortServer) watchPorts() {
 	for {
-		ports, err := serial.GetPortsList()
+		detailedPorts, err := enumerator.GetDetailedPortsList()
 		if err != nil {
 			continue
 		}
 
-		ps.AvaiblePorts <- ports
+		// for _, port := range detailedPorts {
+		// 	log.Printf("VID: %s, PID: %s, Name: %s", port.VID, port.PID, port.Name)
+		// }
+
+		ps.AvaiblePorts <- detailedPorts
 
 		time.Sleep(100 * time.Millisecond)
 	}
@@ -244,23 +249,65 @@ func (ps *PortServer) autoConnect() {
 
 		if len(ports) == 0 {
 			ps.resetPort()
-			// continue
+			time.Sleep(100 * time.Millisecond)
+			continue
 		}
 
 		if len(ports) > 0 && ps.Port == nil {
-			err := ps.OpenPort(ports[0])
+			err := ps.OpenPort(ports[0].Name)
 			if err != nil {
 				log.Print(err)
 			}
+
+			// user, err := user.Current()
+			// if err != nil {
+			// 	log.Print(err)
+			// }
+
+			// symlinkPath := filepath.Join(user.HomeDir, "arduino")
+
+			// log.Print("Available ports:", ports)
+			// log.Print("Symlink path:", symlinkPath)
+
+			// _, err = os.Lstat(symlinkPath)
+			// if err == nil {
+			// 	target, err := os.Readlink(symlinkPath)
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	}
+
+			// 	log.Print("Symlink target:", target)
+
+			// 	err = ps.OpenPort(target)
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	}
+			// } else {
+			// 	arduinoPort := ports[0]
+			// 	err = ps.OpenPort(arduinoPort.Name)
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	} else {
+
+			// 		err = os.Symlink(arduinoPort.Name, symlinkPath)
+			// 		if err != nil {
+			// 			log.Print(err)
+			// 		} else {
+			// 			log.Printf("Created symlink %s -> %s", symlinkPath, arduinoPort)
+			// 		}
+			// 	}
+			// }
+
 		}
+
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
 func (ps *PortServer) portExists(port string) error {
 	availablePorts := <-ps.AvaiblePorts
 	for _, p := range availablePorts {
-		log.Print(p)
-		if p == port {
+		if p.Name == port {
 			return nil
 		}
 	}
@@ -318,6 +365,10 @@ func (ps *PortServer) attemptOpenPort(attempts int, port string) error {
 	}
 
 	return nil
+}
+
+func getPortId(port *enumerator.PortDetails) string {
+	return port.VID + port.PID
 }
 
 type PortDoesNotExistError struct{}

@@ -28,6 +28,27 @@ func (d *DAL) Disconnect() {
 	d.client.Disconnect()
 }
 
+// Session
+
+func (d *DAL) InitSession() (*db.SessionDataDBModel, error) {
+	session, _ := d.GetSession()
+	if session != nil {
+		return session, nil
+	}
+	return d.client.SessionDataDB.CreateOne(db.SessionDataDB.PortName.Set(""), db.SessionDataDB.PortID.Set("")).Exec(d.ctx)
+}
+
+func (d *DAL) GetSession() (*db.SessionDataDBModel, error) {
+	return d.client.SessionDataDB.FindFirst().Exec(d.ctx)
+}
+
+func (d *DAL) UpdateSession(portName string, portID string) (*db.SessionDataDBModel, error) {
+	return d.client.SessionDataDB.FindUnique(db.SessionDataDB.ID.Equals(0)).Update(
+		db.SessionDataDB.PortName.Set(portName),
+		db.SessionDataDB.PortID.Set(portID),
+	).Exec(d.ctx)
+}
+
 // Circuit
 
 func (d *DAL) InitCircuit(circuit *circuit.Circuit) (*db.CircuitDBModel, error) {

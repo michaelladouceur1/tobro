@@ -33,14 +33,13 @@ func init() {
 }
 
 func main() {
-	ps := arduino.NewServer()
-	log.Print("PortServer created")
-
 	st := store.New()
 	if err := st.Connect(); err != nil {
 		log.Fatal(err)
 	}
 	defer st.Disconnect()
+
+	ps := arduino.NewServer()
 
 	c := circuit.New(0, "Default Circuit", models.ArduinoNano, ps)
 	dbCircuit, err := st.InitCircuit(c)
