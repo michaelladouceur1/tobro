@@ -2,9 +2,9 @@ package circuit
 
 import (
 	"tobro/db"
+	"tobro/internal/models"
+	"tobro/internal/models/pin"
 	"tobro/pkg/arduino"
-	"tobro/pkg/models"
-	"tobro/pkg/models/pin"
 )
 
 // arduino nano pinout

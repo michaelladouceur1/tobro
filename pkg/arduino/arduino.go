@@ -9,7 +9,7 @@ import (
 	"go.bug.st/serial"
 	"go.bug.st/serial/enumerator"
 
-	"tobro/pkg/models"
+	"tobro/internal/models"
 )
 
 type PortServer struct {

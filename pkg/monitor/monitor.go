@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
+	"tobro/internal/models/circuit"
+	"tobro/internal/models/pin"
 	"tobro/pkg/arduino"
-	"tobro/pkg/models/circuit"
-	"tobro/pkg/models/pin"
 	"tobro/pkg/ws"
 )
 

@@ -9,11 +9,11 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"tobro/internal/models"
+	"tobro/internal/models/circuit"
+	"tobro/internal/models/sketch"
 	"tobro/pkg/arduino"
 	tobroHTTP "tobro/pkg/http"
-	"tobro/pkg/models"
-	"tobro/pkg/models/circuit"
-	"tobro/pkg/models/sketch"
 	"tobro/pkg/monitor"
 	"tobro/pkg/store"
 	"tobro/pkg/ws"

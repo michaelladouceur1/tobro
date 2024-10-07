@@ -3,10 +3,10 @@ package http_server
 import (
 	"encoding/json"
 	"net/http"
-	"tobro/pkg/models"
-	"tobro/pkg/models/circuit"
-	"tobro/pkg/models/pin"
-	"tobro/pkg/models/sketch"
+	"tobro/internal/models"
+	"tobro/internal/models/circuit"
+	"tobro/internal/models/pin"
+	"tobro/internal/models/sketch"
 	"tobro/pkg/store"
 )
 

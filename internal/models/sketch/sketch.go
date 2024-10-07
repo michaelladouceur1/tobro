@@ -2,9 +2,9 @@ package sketch
 
 import (
 	"tobro/db"
-	"tobro/pkg/models"
-	"tobro/pkg/models/circuit"
-	"tobro/pkg/models/pin"
+	"tobro/internal/models"
+	"tobro/internal/models/circuit"
+	"tobro/internal/models/pin"
 )
 
 type Sketch struct {

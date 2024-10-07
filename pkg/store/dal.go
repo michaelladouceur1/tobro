@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"tobro/db"
-	"tobro/pkg/models/circuit"
-	"tobro/pkg/models/pin"
+	"tobro/internal/models/circuit"
+	"tobro/internal/models/pin"
 )
 
 type DAL struct {

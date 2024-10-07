@@ -3,8 +3,8 @@ package pin
 import (
 	"encoding/json"
 	"tobro/db"
+	"tobro/internal/models"
 	"tobro/pkg/arduino"
-	"tobro/pkg/models"
 )
 
 type Pin struct {
