@@ -9,14 +9,15 @@ import (
 
 	"github.com/gorilla/mux"
 
+	thttp "tobro/api/http"
+	"tobro/api/ws"
+	"tobro/db"
 	"tobro/internal/models"
 	"tobro/internal/models/circuit"
 	"tobro/internal/models/sketch"
 	"tobro/pkg/arduino"
-	tobroHTTP "tobro/pkg/http"
 	"tobro/pkg/monitor"
 	"tobro/pkg/store"
-	"tobro/pkg/ws"
 )
 
 //go:embed web/build
@@ -33,7 +34,7 @@ func init() {
 }
 
 func main() {
-	st := store.New()
+	st := store.New(db.NewClient())
 	if err := st.Connect(); err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +52,7 @@ func main() {
 
 	sk := sketch.New(0, "Default Sketch", c)
 
-	hs := tobroHTTP.NewHTTPServer(st, c, sk)
+	hs := thttp.NewHTTPServer(st, c, sk)
 
 	hub := ws.NewWSHub()
 	go hub.Run()
@@ -61,10 +62,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.Use(tobroHTTP.EnableCORS)
-	r.Use(tobroHTTP.LogRequest)
+	r.Use(thttp.EnableCORS)
+	r.Use(thttp.LogRequest)
 
-	h := tobroHTTP.HandlerFromMux(hs, r)
+	h := thttp.HandlerFromMux(hs, r)
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		ws.ServeWs(hub, ps, w, r)
 	})

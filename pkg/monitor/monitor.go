@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
+	"tobro/api/ws"
 	"tobro/internal/models/circuit"
 	"tobro/internal/models/pin"
 	"tobro/pkg/arduino"
-	"tobro/pkg/ws"
 )
 
 type Monitor struct {
