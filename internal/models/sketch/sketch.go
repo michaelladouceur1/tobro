@@ -76,6 +76,7 @@ func (s *Sketch) GetStep(id int) (*SketchStep, error) {
 
 func (s *Sketch) AddStep(start, end int, pin *pin.Pin, action models.SketchAction) {
 	s.Steps = append(s.Steps, SketchStep{
+		ID:     len(s.Steps) + 1,
 		Start:  start,
 		End:    end,
 		Pin:    pin,

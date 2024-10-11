@@ -193,6 +193,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /sketch/step:
+    post:
+      requestBody:
+        description: Create a sketch step
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SketchStepAPI'
+      responses:
+        '200':
+          description: Create sketch step post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SketchStepAPI'
+        '400':
+          description: Create sketch step post error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     ErrorResponse:

@@ -2,7 +2,9 @@ package http_server
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"tobro/internal/models"
 	"tobro/internal/models/sketch"
 )
 
@@ -50,4 +52,36 @@ func (s *HTTPServer) PostSketch(w http.ResponseWriter, r *http.Request) {
 	s.sketch.UpdateFromDBModel(newSketch)
 
 	json.NewEncoder(w).Encode(apiSketchFromSketch(s.sketch))
+}
+
+func (s *HTTPServer) PostSketchStep(w http.ResponseWriter, r *http.Request) {
+	var req SketchStepAPI
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("start: %d, end: %d, pin: %d, action: %s", req.Start, req.End, req.PinNumber, req.Action)
+
+	pin, err := s.circuit.GetPin(req.PinNumber)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("steps: %v", s.sketch.GetSteps())
+
+	s.sketch.AddStep(req.Start, req.End, pin, models.SketchAction(req.Action))
+
+	log.Printf("steps: %v", s.sketch.GetSteps())
+
+	// newStep, err := s.store.CreateSketchStep(s.sketch.ID, req.Start, req.End, req.PinNumber, req.Action)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// s.sketch.UpdateFromDBModel(newStep)
+
+	// json.NewEncoder(w).Encode(apiSketchFromSketch(s.sketch))
 }

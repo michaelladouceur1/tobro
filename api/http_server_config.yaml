@@ -1,6 +1,6 @@
 # yaml-language-server: ...
-package: main
+package: http_server
 generate:
   gorilla-server: true
   models: true
-output: http_gen.go
+output: api/http/http_gen.go
